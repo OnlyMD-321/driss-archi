@@ -1,0 +1,1460 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{tcolorbox}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm}
+
+%----------- Couleurs -----------
+\definecolor{primary}{RGB}{30,41,59}
+\definecolor{accent}{RGB}{59,130,246}
+\definecolor{success}{RGB}{16,185,129}
+\definecolor{warning}{RGB}{245,158,11}
+\definecolor{danger}{RGB}{239,68,68}
+\definecolor{lightgray}{RGB}{248,250,252}
+\definecolor{bordergray}{RGB}{226,232,240}
+\definecolor{codebg}{RGB}{15,23,42}
+\definecolor{codetext}{RGB}{226,232,240}
+\definecolor{codekw}{RGB}{147,197,253}
+\definecolor{codestr}{RGB}{134,239,172}
+\definecolor{codecomment}{RGB}{148,163,184}
+
+%----------- Hyperlinks -----------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accent,
+    urlcolor=accent,
+    pdftitle={Document d'Architecture Technique - GRM},
+    pdfauthor={Équipe GRM}
+}
+
+%----------- En-tête / Pied de page -----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{primary}\textbf{GRM} — Document d'Architecture Technique}
+\fancyhead[R]{\small\color{primary}\leftmark}
+\fancyfoot[L]{\small\color{gray}Confidentiel — Usage interne}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\small\color{gray}\today}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+%----------- Titres de chapitres -----------
+\titleformat{\chapter}[block]
+  {\normalfont\Large\bfseries\color{primary}}
+  {\thechapter.}{0.8em}{}[\vspace{-4pt}\color{accent}\rule{\textwidth}{2pt}\vspace{6pt}]
+\titlespacing*{\chapter}{0pt}{0pt}{16pt}
+\titleformat{\section}{\normalfont\large\bfseries\color{primary}}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries\color{primary}}{\thesubsection}{0.8em}{}
+\titleformat{\subsubsection}{\normalfont\small\bfseries\color{primary}}{\thesubsubsection}{0.8em}{}
+
+%----------- Listings -----------
+\lstdefinestyle{sql}{
+    language=SQL,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small\color{codetext},
+    keywordstyle=\color{codekw}\bfseries,
+    stringstyle=\color{codestr},
+    commentstyle=\color{codecomment}\itshape,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    breaklines=true,
+    frame=none,
+    tabsize=2,
+    showstringspaces=false,
+    captionpos=b,
+    rulecolor=\color{bordergray}
+}
+
+\lstdefinestyle{js}{
+    language=JavaScript,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small\color{codetext},
+    keywordstyle=\color{codekw}\bfseries,
+    stringstyle=\color{codestr},
+    commentstyle=\color{codecomment}\itshape,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    breaklines=true,
+    frame=none,
+    tabsize=2,
+    showstringspaces=false,
+    captionpos=b
+}
+
+\lstdefinestyle{bash}{
+    language=bash,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small\color{codetext},
+    keywordstyle=\color{codekw}\bfseries,
+    stringstyle=\color{codestr},
+    commentstyle=\color{codecomment}\itshape,
+    numbers=none,
+    breaklines=true,
+    frame=none,
+    tabsize=2,
+    showstringspaces=false,
+    captionpos=b
+}
+
+%----------- Boîtes personnalisées -----------
+\tcbset{
+  infobox/.style={
+    colback=lightgray,
+    colframe=accent,
+    fonttitle=\bfseries\small\color{primary},
+    boxrule=1pt,
+    arc=4pt,
+    left=8pt, right=8pt, top=6pt, bottom=6pt
+  },
+  warnbox/.style={
+    colback={RGB:orange,5;white,95},
+    colframe=warning,
+    fonttitle=\bfseries\small\color{primary},
+    boxrule=1pt,
+    arc=4pt,
+    left=8pt, right=8pt, top=6pt, bottom=6pt
+  }
+}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+%==========================================================
+\begin{document}
+%==========================================================
+
+%----------- PAGE DE GARDE -----------
+\begin{titlepage}
+\pagecolor{primary}
+\color{white}
+\vspace*{2cm}
+\begin{center}
+    {\fontsize{38}{46}\selectfont\bfseries GRM}\\[0.4cm]
+    {\Large\bfseries Gestion des Ressources Matérielles}\\[2.5cm]
+
+    \colorbox{accent}{\parbox{0.85\textwidth}{\centering\vspace{0.4cm}
+    {\huge\bfseries Document d'Architecture Technique}\\[0.2cm]
+    {\large Conception, Technologies \& Déploiement}
+    \vspace{0.4cm}}}
+
+    \vspace{2.5cm}
+
+    \begin{tabular}{ll}
+        \textbf{Projet} & Gestion des Ressources Matérielles \\[4pt]
+        \textbf{Établissement} & Ynov Campus \\[4pt]
+        \textbf{Filière} & M1 Informatique — Architecture Logicielle \\[4pt]
+        \textbf{Responsable pédagogique} & Pr. Driss \\[4pt]
+        \textbf{Version} & 1.0 \\[4pt]
+        \textbf{Date} & \today \\[4pt]
+        \textbf{Statut} & \textcolor{success}{Approuvé} \\
+    \end{tabular}
+
+    \vspace{3cm}
+    {\small\color{gray} Ce document est confidentiel et destiné à un usage interne uniquement.}
+\end{center}
+\end{titlepage}
+\pagecolor{white}\color{black}
+
+%----------- HISTORIQUE DES RÉVISIONS -----------
+\chapter*{Historique des Révisions}
+\addcontentsline{toc}{chapter}{Historique des Révisions}
+\begin{tabularx}{\textwidth}{|C{1.8cm}|C{2.5cm}|L{4.5cm}|L{4.5cm}|}
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Version}} & \textcolor{white}{\textbf{Date}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Auteur}} \\
+\hline
+0.1 & 01/04/2025 & Rédaction de la vue d'ensemble & Équipe GRM \\
+\hline
+0.5 & 20/04/2025 & Ajout des diagrammes et choix technologiques & Équipe GRM \\
+\hline
+0.9 & 05/05/2025 & Ajout des diagrammes de séquence et déploiement & Équipe GRM \\
+\hline
+1.0 & \today & Version finale validée & Équipe GRM \\
+\hline
+\end{tabularx}
+
+%----------- TABLE DES MATIÈRES -----------
+\tableofcontents
+\newpage
+
+%==========================================================
+\chapter{Vue d'Ensemble de l'Architecture}
+%==========================================================
+
+\section{Introduction}
+
+Ce document décrit l'architecture technique complète du système GRM. Il couvre les décisions architecturales, les choix technologiques, la conception des composants, les flux de communication, la sécurité et les stratégies de déploiement.
+
+L'architecture du système GRM répond aux contraintes suivantes :
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Séparation des préoccupations} : chaque couche a une responsabilité claire et délimitée
+    \item \textbf{Sécurité par conception} : authentification et autorisation intégrées dès la conception
+    \item \textbf{Maintenabilité} : code modulaire, configuration externalisée, déploiement reproductible
+    \item \textbf{Extensibilité} : ajout de nouveaux modules sans remise en cause de l'architecture existante
+\end{itemize}
+
+\section{Pattern Architectural : 3-Tiers}
+
+Le système adopte le pattern \textbf{3-tiers} (three-tier architecture), qui sépare le système en trois couches logiques indépendantes :
+
+\begin{tcolorbox}[infobox, title=Définition — Architecture 3-Tiers]
+L'architecture 3-tiers est un modèle de conception logicielle qui divise une application en trois couches distinctes :
+\begin{enumerate}
+    \item \textbf{Couche Présentation (Tier 1)} : Interface utilisateur — gère l'affichage et les interactions
+    \item \textbf{Couche Logique Métier (Tier 2)} : Traitement — applique les règles métier et orchestre les données
+    \item \textbf{Couche Données (Tier 3)} : Persistance — stocke et récupère les données de manière structurée
+\end{enumerate}
+\end{tcolorbox}
+
+\section{Diagramme d'Architecture Global}
+
+\begin{center}
+\begin{verbatim}
+  ┌─────────────────────────────────────────────────────────┐
+  │                   TIER 1 — PRÉSENTATION                 │
+  │                                                         │
+  │   ┌──────────────────────────────────────────────┐      │
+  │   │       React SPA — Application Web            │      │
+  │   │  Port 3000 (dev) / Port 80 (prod via Nginx)  │      │
+  │   │                                              │      │
+  │   │  AuthContext │ Pages │ Composants │ Services │      │
+  │   └──────────────────────────────────────────────┘      │
+  └────────────────────────┬────────────────────────────────┘
+                           │ HTTP/HTTPS — REST API (JSON)
+                           │ En-tête: Authorization: Bearer <JWT>
+  ┌────────────────────────▼────────────────────────────────┐
+  │                   TIER 2 — LOGIQUE MÉTIER               │
+  │                                                         │
+  │   ┌──────────────────────────────────────────────┐      │
+  │   │    Express.js API Server — Node.js 20        │      │
+  │   │              Port 5000                       │      │
+  │   │                                              │      │
+  │   │  Middleware JWT │ Routes │ Controllers       │      │
+  │   └──────────────────────────────────────────────┘      │
+  └────────────────────────┬────────────────────────────────┘
+                           │ SQL — Requêtes paramétrées
+                           │ Protocole TCP/5432 (pg pool)
+  ┌────────────────────────▼────────────────────────────────┐
+  │                   TIER 3 — DONNÉES                      │
+  │                                                         │
+  │   ┌──────────────────────────────────────────────┐      │
+  │   │         PostgreSQL 15 — Base de données      │      │
+  │   │              Port 5432                       │      │
+  │   │                                              │      │
+  │   │  11 tables │ UUID │ JSONB │ Transactions     │      │
+  │   └──────────────────────────────────────────────┘      │
+  └─────────────────────────────────────────────────────────┘
+\end{verbatim}
+\end{center}
+
+\section{Justification des Choix Architecturaux}
+
+\subsection{Pourquoi une Architecture 3-Tiers ?}
+
+\begin{longtable}{|L{3.5cm}|L{10cm}|}
+\caption{Avantages de l'architecture 3-tiers pour GRM} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Aspect}} & \textcolor{white}{\textbf{Justification}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Aspect} & \textbf{Justification} \\
+\hline
+\endhead
+Séparation claire & Le frontend peut évoluer (changement de framework) sans toucher au backend, et vice-versa. \\
+\hline
+Réutilisation & L'API REST peut être consommée par d'autres clients (application mobile, scripts d'administration) sans modification. \\
+\hline
+Sécurité & La logique de contrôle d'accès est centralisée dans le backend, impossible à contourner côté client. \\
+\hline
+Testabilité & Chaque couche peut être testée de manière indépendante (tests unitaires, tests d'intégration). \\
+\hline
+Scalabilité & Chaque tier peut être scalé indépendamment selon la charge (ex: plusieurs instances backend avec une seule DB). \\
+\hline
+\end{longtable}
+
+\subsection{Alternatives Considérées}
+
+\begin{longtable}{|L{3cm}|L{5.5cm}|L{5.5cm}|}
+\caption{Comparaison des alternatives architecturales} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Alternative}} & \textcolor{white}{\textbf{Avantages}} & \textcolor{white}{\textbf{Inconvénients / Raison de rejet}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Alternative} & \textbf{Avantages} & \textbf{Inconvénients / Raison de rejet} \\
+\hline
+\endhead
+Architecture Monolithique & Simple à déployer, faible overhead réseau & Couplage fort, difficultés de maintenance, scalabilité limitée \\
+\hline
+Microservices & Isolation parfaite, scalabilité fine & Complexité opérationnelle excessive pour la taille du projet \\
+\hline
+MVC Serveur (SSR) & Rendu côté serveur, SEO natif & Moins adapté à une interface riche et temps réel; rechargement complet de page \\
+\hline
+GraphQL & Flexibilité des requêtes, typage & Surcharge de configuration, courbe d'apprentissage plus élevée \\
+\hline
+\end{longtable}
+
+%==========================================================
+\chapter{Choix Technologiques}
+%==========================================================
+
+\section{Stack Technologique Complète}
+
+\begin{longtable}{|L{2.5cm}|L{2.5cm}|L{3.5cm}|L{5cm}|}
+\caption{Stack technologique GRM} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Couche}} & \textcolor{white}{\textbf{Technologie}} & \textcolor{white}{\textbf{Version}} & \textcolor{white}{\textbf{Justification}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Couche} & \textbf{Technologie} & \textbf{Version} & \textbf{Justification} \\
+\hline
+\endhead
+Frontend UI & React & 18.2 & SPA déclarative, composants réutilisables, large communauté \\
+\hline
+Routing SPA & React Router & v6 & Navigation client-side sans rechargement, gestion de routes imbriquées \\
+\hline
+HTTP Client & Axios & 1.6.x & Intercepteurs pour gestion centralisée du JWT, meilleure ergonomie que fetch natif \\
+\hline
+Build Tool & Create React App & 5.0 & Configuration webpack zero-config, intégration ESLint \\
+\hline
+Backend & Node.js & 20 LTS & Non-bloquant (event loop), JSON natif, même langage côté client/serveur \\
+\hline
+Framework API & Express.js & 4.18 & Minimaliste, flexible, middleware system mature \\
+\hline
+Auth & jsonwebtoken & 9.x & Standard JWT RFC 7519, signature HMAC-SHA256 \\
+\hline
+Hachage & bcrypt & 5.1 & Standard de l'industrie pour hachage sécurisé des mots de passe \\
+\hline
+Base de données & PostgreSQL & 15 & ACID, JSONB natif, UUID, transactions imbriquées, robustesse prouvée \\
+\hline
+Driver DB & pg (node-postgres) & 8.11 & Pool de connexions intégré, requêtes paramétrées, support des transactions \\
+\hline
+Proxy / Reverse & Nginx & 1.25 (Alpine) & Sert le build statique React et proxifie les appels API vers le backend \\
+\hline
+Conteneurisation & Docker + Compose & 24.x / 2.x & Reproductibilité des environnements, isolation, déploiement unifié \\
+\hline
+\end{longtable}
+
+\section{Justification Détaillée des Choix}
+
+\subsection{Node.js + Express vs Spring Boot}
+
+\begin{tcolorbox}[infobox, title=Pourquoi Node.js plutôt que Spring Boot ?]
+\begin{itemize}
+    \item \textbf{Homogénéité du langage} : JavaScript côté client et serveur réduit le contexte de commutation pour les développeurs
+    \item \textbf{Légèreté} : Express est minimaliste (~50 KB) contre Spring Boot (~15 MB), réduisant l'empreinte mémoire du conteneur
+    \item \textbf{Écosystème npm} : plus de 2 millions de packages disponibles
+    \item \textbf{Performance I/O} : le modèle non-bloquant est idéal pour une API REST majoritairement I/O-bound (lectures DB)
+    \item \textbf{Démarrage rapide} : le serveur Node.js démarre en < 500 ms, contre 10-30 secondes pour Spring Boot
+\end{itemize}
+\textit{Spring Boot aurait été préféré pour un système avec logique de calcul intensive (CPU-bound) ou un équipe Java expérimentée.}
+\end{tcolorbox}
+
+\subsection{PostgreSQL vs MySQL vs MongoDB}
+
+\begin{longtable}{|L{3cm}|L{3.5cm}|L{3.5cm}|L{3.5cm}|}
+\caption{Comparaison des SGBD} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Critère}} & \textcolor{white}{\textbf{PostgreSQL}} & \textcolor{white}{\textbf{MySQL}} & \textcolor{white}{\textbf{MongoDB}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Critère} & \textbf{PostgreSQL} & \textbf{MySQL} & \textbf{MongoDB} \\
+\hline
+\endhead
+Transactions ACID & Complet & Partiel (InnoDB) & Limité \\
+\hline
+JSONB natif & Oui (indexable) & Non & Oui (natif) \\
+\hline
+UUID natif & Oui & Non & Oui \\
+\hline
+Contraintes FK & Robustes & Robustes & Aucune \\
+\hline
+Typage fort & Oui & Oui & Non \\
+\hline
+Intégrité données & Haute & Haute & Faible \\
+\hline
+Choix final & \textbf{Retenu} & Alternative & Non adapté \\
+\hline
+\end{longtable}
+
+PostgreSQL a été retenu car il offre à la fois la rigueur des contraintes relationnelles (clés étrangères, contraintes CHECK, transactions ACID) et la flexibilité du JSONB pour les spécifications techniques variables des ressources.
+
+\subsection{React vs Angular}
+
+React a été préféré à Angular pour les raisons suivantes :
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Courbe d'apprentissage} plus douce (bibliothèque vs framework complet)
+    \item \textbf{Flexibilité} : React impose moins de conventions, laissant plus de liberté architecturale
+    \item \textbf{Performance} : Virtual DOM optimisé, rendu différentiel efficace
+    \item \textbf{Écosystème} : taille de la communauté et richesse des bibliothèques tierces
+\end{itemize}
+
+%==========================================================
+\chapter{Architecture du Backend}
+%==========================================================
+
+\section{Organisation du Code}
+
+L'API backend suit le pattern \textbf{MVC allégé} (Model-View-Controller), sans couche View (remplacée par des réponses JSON).
+
+\begin{center}
+\begin{verbatim}
+backend/
+├── server.js                  ← Point d'entrée — configuration Express,
+│                                montage des routes, démarrage serveur
+├── .env                       ← Variables de configuration (non versionné)
+├── package.json
+├── Dockerfile
+│
+├── database/
+│   └── schema.sql             ← DDL complet + données initiales
+│
+└── src/
+    ├── config/
+    │   └── database.js        ← Pool pg (singleton)
+    │
+    ├── middleware/
+    │   └── auth.js            ← authenticate() + authorize(...roles)
+    │
+    ├── controllers/           ← Logique métier (1 fichier par domaine)
+    │   ├── authController.js
+    │   ├── tenderController.js
+    │   ├── offerController.js
+    │   ├── resourceController.js
+    │   ├── supplierController.js
+    │   ├── breakdownController.js
+    │   └── departmentController.js
+    │
+    └── routes/                ← Définition des routes REST + application middleware
+        ├── auth.js
+        ├── tenders.js
+        ├── offers.js
+        ├── resources.js
+        ├── suppliers.js
+        ├── breakdowns.js
+        └── departments.js
+\end{verbatim}
+\end{center}
+
+\section{Flux d'une Requête HTTP}
+
+Toute requête entrante suit le flux suivant :
+
+\begin{center}
+\begin{verbatim}
+Client HTTP
+    │
+    ▼
+[1] server.js
+    ├── CORS Middleware         → Vérifie l'origine de la requête
+    ├── express.json()         → Parse le corps JSON
+    └── Montage des routes     → /api/auth, /api/tenders, etc.
+    │
+    ▼
+[2] Router (ex: routes/tenders.js)
+    ├── authenticate           → Vérifie et décode le JWT
+    ├── authorize('responsable')  → Contrôle le rôle
+    └── Route Handler          → Appelle le controller
+    │
+    ▼
+[3] Controller (ex: tenderController.js)
+    ├── Extraction paramètres  → req.body, req.params, req.user
+    ├── Validation métier      → Règles de gestion
+    ├── Requête SQL (pool.query)  → Accès PostgreSQL
+    └── Réponse JSON           → res.json() ou res.status(xxx).json()
+    │
+    ▼
+[4] PostgreSQL
+    ├── Pool de connexions     → Gestion automatique
+    ├── Transaction (si besoin)  → BEGIN / COMMIT / ROLLBACK
+    └── Retourne les résultats
+\end{verbatim}
+\end{center}
+
+\section{Conception de l'API REST}
+
+\subsection{Conventions REST Respectées}
+
+\begin{longtable}{|L{2.5cm}|L{2cm}|L{4cm}|L{5cm}|}
+\caption{Endpoints de l'API GRM} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Méthode}} & \textcolor{white}{\textbf{Code}} & \textcolor{white}{\textbf{Route}} & \textcolor{white}{\textbf{Action}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Méthode} & \textbf{Code} & \textbf{Route} & \textbf{Action} \\
+\hline
+\endhead
+POST & 200 & /api/auth/login & Authentification \\
+\hline
+POST & 201 & /api/auth/register-supplier & Inscription fournisseur \\
+\hline
+GET & 200 & /api/auth/profile & Profil connecté \\
+\hline
+GET & 200 & /api/tenders & Liste des appels d'offre \\
+\hline
+POST & 201 & /api/tenders & Créer un appel d'offre \\
+\hline
+GET & 200 & /api/tenders/:id & Détail d'un appel d'offre \\
+\hline
+PUT & 200 & /api/tenders/:id & Modifier un appel d'offre \\
+\hline
+PATCH & 200 & /api/tenders/:id/close & Fermer un appel d'offre \\
+\hline
+GET & 200 & /api/offers/tender/:id & Offres d'un AO \\
+\hline
+POST & 201 & /api/offers/tender/:id & Soumettre une offre \\
+\hline
+PATCH & 200 & /api/offers/:id/accept & Accepter une offre \\
+\hline
+PATCH & 200 & /api/offers/:id/reject & Rejeter une offre \\
+\hline
+GET & 200 & /api/resources & Liste des ressources \\
+\hline
+POST & 201 & /api/resources & Créer une ressource \\
+\hline
+GET & 200 & /api/resources/:id & Détail d'une ressource \\
+\hline
+PUT & 200 & /api/resources/:id & Modifier une ressource \\
+\hline
+DELETE & 200 & /api/resources/:id & Supprimer une ressource \\
+\hline
+POST & 201 & /api/resources/:id/assign & Affecter une ressource \\
+\hline
+GET & 200 & /api/suppliers & Liste des fournisseurs \\
+\hline
+PATCH & 200 & /api/suppliers/:id/blacklist & Blacklister \\
+\hline
+PATCH & 200 & /api/suppliers/:id/unblacklist & Retirer du blacklist \\
+\hline
+GET & 200 & /api/breakdowns & Liste des pannes \\
+\hline
+POST & 201 & /api/breakdowns & Signaler une panne \\
+\hline
+GET & 200 & /api/breakdowns/:id & Détail d'une panne \\
+\hline
+POST & 201 & /api/breakdowns/:id/maintenance-report & Constat technicien \\
+\hline
+PATCH & 200 & /api/breakdowns/:id/resolve & Résoudre une panne \\
+\hline
+PATCH & 200 & /api/breakdowns/:id/return-to-supplier & Retour fournisseur \\
+\hline
+GET & 200 & /api/departments & Liste des départements \\
+\hline
+POST & 201 & /api/departments & Créer un département \\
+\hline
+GET & 200 & /api/departments/:id/members & Membres d'un département \\
+\hline
+GET & 200 & /api/health & Santé du serveur \\
+\hline
+\end{longtable}
+
+\subsection{Format des Réponses}
+
+\textbf{Succès (200/201) :}
+\begin{lstlisting}[style=js, caption={Format réponse succès}]
+// Ressource unique
+{ "id": "uuid", "name": "...", "status": "available", ... }
+
+// Liste
+[ { "id": "uuid", ... }, { "id": "uuid", ... } ]
+
+// Message de confirmation
+{ "message": "Resource deleted" }
+\end{lstlisting}
+
+\textbf{Erreur (4xx/5xx) :}
+\begin{lstlisting}[style=js, caption={Format réponse erreur}]
+// 401 - Non authentifié
+{ "error": "No token provided" }
+{ "error": "Invalid token" }
+
+// 403 - Non autorisé
+{ "error": "Access denied" }
+{ "error": "Supplier is blacklisted" }
+
+// 404 - Non trouvé
+{ "error": "Resource not found" }
+
+// 500 - Erreur serveur
+{ "error": "duplicate key value violates unique constraint..." }
+\end{lstlisting}
+
+\section{Gestion des Transactions}
+
+Les opérations critiques qui modifient plusieurs tables simultanément utilisent des transactions SQL explicites pour garantir l'atomicité.
+
+\begin{lstlisting}[style=js, caption={Transaction — Acceptation d'une offre (offerController.js)}]
+const accept = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Marquer l'offre selectionnee comme acceptee
+        const { rows } = await client.query(
+            `UPDATE offers SET status='accepted'
+             WHERE id = $1 RETURNING *`,
+            [req.params.id]
+        );
+
+        // 2. Rejeter automatiquement toutes les autres offres
+        await client.query(
+            `UPDATE offers SET status='rejected'
+             WHERE tender_id = $1 AND id != $2`,
+            [rows[0].tender_id, req.params.id]
+        );
+
+        // 3. Marquer l'appel d'offre comme attribue
+        await client.query(
+            `UPDATE tenders SET status='awarded'
+             WHERE id = $1`,
+            [rows[0].tender_id]
+        );
+
+        await client.query('COMMIT');
+        res.json(rows[0]);
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release(); // Retour au pool obligatoire
+    }
+};
+\end{lstlisting}
+
+%==========================================================
+\chapter{Architecture du Frontend}
+%==========================================================
+
+\section{Organisation du Code React}
+
+\begin{center}
+\begin{verbatim}
+frontend/src/
+├── index.js                   ← Point d'entrée — ReactDOM.createRoot()
+├── App.js                     ← Router principal (BrowserRouter + Routes)
+│
+├── context/
+│   └── AuthContext.js         ← État global d'authentification (React Context)
+│                                Expose: user, login(), logout(), loading
+│
+├── services/
+│   └── api.js                 ← Instance Axios configurée
+│                                Intercepteur: redirection sur 401
+│
+├── components/
+│   └── Layout/
+│       └── Layout.js          ← Shell de l'application:
+│                                Sidebar (collapsible) + Header + <Outlet>
+│
+└── pages/                     ← Pages par domaine fonctionnel
+    ├── Login.js               ← Formulaire d'authentification
+    ├── Dashboard.js           ← Vue synthétique avec statistiques
+    ├── Tenders/
+    │   ├── TenderList.js      ← Liste des appels d'offre
+    │   ├── TenderForm.js      ← Formulaire de création
+    │   └── TenderDetail.js    ← Détail + gestion des offres
+    ├── Resources/
+    │   ├── ResourceList.js    ← Inventaire filtrable
+    │   └── ResourceDetail.js  ← Fiche ressource + affectation
+    ├── Suppliers/
+    │   ├── SupplierList.js    ← Gestion des fournisseurs + blacklist
+    │   └── SupplierRegister.js ← Inscription fournisseur (publique)
+    ├── Breakdowns/
+    │   ├── BreakdownList.js   ← Liste des tickets de panne
+    │   └── BreakdownDetail.js ← Ticket + constat maintenance
+    └── Departments/
+        └── DepartmentList.js  ← Départements et membres
+\end{verbatim}
+\end{center}
+
+\section{Gestion de l'État}
+
+\subsection{AuthContext — État Global d'Authentification}
+
+\begin{lstlisting}[style=js, caption={AuthContext.js — Gestion de l'état d'authentification}]
+const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    // Restauration de la session au demarrage
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const savedUser = localStorage.getItem('user');
+        if (token && savedUser) {
+            api.defaults.headers.common['Authorization'] =
+                `Bearer ${token}`;
+            setUser(JSON.parse(savedUser));
+        }
+        setLoading(false);
+    }, []);
+
+    const login = async (email, password) => {
+        const { data } = await api.post('/auth/login',
+            { email, password });
+        // Persistance locale du token et du profil
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        api.defaults.headers.common['Authorization'] =
+            `Bearer ${data.token}`;
+        setUser(data.user);
+    };
+    ...
+};
+\end{lstlisting}
+
+\subsection{Intercepteur Axios}
+
+L'intercepteur Axios centralise la gestion des erreurs d'authentification :
+
+\begin{lstlisting}[style=js, caption={api.js — Intercepteur Axios}]
+api.interceptors.response.use(
+    response => response,  // Reponse valide: on passe directement
+    error => {
+        if (error.response?.status === 401) {
+            // Token expire ou invalide: deconnexion automatique
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+);
+\end{lstlisting}
+
+\section{Routing et Protection des Routes}
+
+Le composant \texttt{ProtectedRoute} protège toutes les pages authentifiées :
+
+\begin{lstlisting}[style=js, caption={App.js — Protection des routes}]
+const ProtectedRoute = ({ children }) => {
+    const { user, loading } = useAuth();
+    if (loading) return <div>Chargement...</div>;
+    // Redirection vers /login si non authentifie
+    return user ? children : <Navigate to="/login" />;
+};
+\end{lstlisting}
+
+\section{Contrôle d'Accès Côté Interface}
+
+Les éléments de l'interface sont conditionnés au rôle de l'utilisateur connecté, en complément du contrôle obligatoire côté serveur :
+
+\begin{lstlisting}[style=js, caption={Exemple — Bouton conditionnel au rôle}]
+// Le bouton "Nouveau" n'apparait que pour responsable et chef
+{['responsable', 'chef_departement'].includes(user?.role) && (
+    <Link to="/tenders/new" style={s.btn}>+ Nouveau</Link>
+)}
+
+// L'action "Blacklister" est reservee au responsable
+{user?.role === 'responsable' && (
+    <button onClick={() => handleBlacklist(supplier.id)}>
+        Mettre en liste noire
+    </button>
+)}
+\end{lstlisting}
+
+%==========================================================
+\chapter{Architecture de la Base de Données}
+%==========================================================
+
+\section{Schéma Relationnel}
+
+La base de données PostgreSQL contient \textbf{11 tables} organisées autour des domaines métier du système.
+
+\subsection{Tables Principales}
+
+\begin{longtable}{|L{3.5cm}|L{5cm}|L{5cm}|}
+\caption{Description des tables} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Table}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Colonnes clés}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Table} & \textbf{Description} & \textbf{Colonnes clés} \\
+\hline
+\endhead
+users & Tous les utilisateurs du système & id (UUID PK), email (UNIQUE), password (hash), role (ENUM) \\
+\hline
+departments & Unités organisationnelles & id (UUID PK), name \\
+\hline
+suppliers & Profils des sociétés fournisseurs & id (UUID PK), user\_id (FK), company\_name, is\_blacklisted \\
+\hline
+tenders & Appels d'offre & id (UUID PK), start\_date, end\_date, status (ENUM), created\_by (FK) \\
+\hline
+tender\_needs & Besoins rattachés à un AO & tender\_id (FK), resource\_type, quantity, specs (JSONB) \\
+\hline
+offers & Propositions des fournisseurs & tender\_id (FK), supplier\_id (FK), total\_price, status (ENUM) \\
+\hline
+offer\_items & Détail article par article & offer\_id (FK), resource\_type, brand, unit\_price, quantity \\
+\hline
+resources & Inventaire matériel & id (UUID PK), inventory\_number (UNIQUE), status (ENUM), warranty\_end, specs (JSONB) \\
+\hline
+assignments & Affectations des ressources & resource\_id (FK), department\_id (FK), assigned\_user\_id (FK), is\_active \\
+\hline
+breakdowns & Tickets de panne & resource\_id (FK), reported\_by (FK), status (ENUM) \\
+\hline
+maintenance\_reports & Constats des techniciens & breakdown\_id (FK), technician\_id (FK), frequency (ENUM), order\_type (ENUM), can\_repair \\
+\hline
+\end{longtable}
+
+\subsection{Extrait du Schéma SQL}
+
+\begin{lstlisting}[style=sql, caption={Schéma — Tables principales (extrait)}]
+-- Extension UUID
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Utilisateurs avec roles
+CREATE TABLE users (
+    id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name          VARCHAR(255) NOT NULL,
+    email         VARCHAR(255) UNIQUE NOT NULL,
+    password      VARCHAR(255) NOT NULL,
+    role          VARCHAR(50) NOT NULL
+                  CHECK (role IN (
+                    'responsable','chef_departement',
+                    'enseignant','fournisseur','technicien'
+                  )),
+    department_id UUID REFERENCES departments(id),
+    created_at    TIMESTAMP DEFAULT NOW()
+);
+
+-- Appels d'offre avec cycle de vie
+CREATE TABLE tenders (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title       VARCHAR(255) NOT NULL,
+    description TEXT,
+    start_date  DATE NOT NULL,
+    end_date    DATE NOT NULL,
+    status      VARCHAR(50) DEFAULT 'open'
+                CHECK (status IN ('draft','open','closed','awarded')),
+    created_by  UUID REFERENCES users(id),
+    created_at  TIMESTAMP DEFAULT NOW()
+);
+
+-- Ressources avec specifications flexibles (JSONB)
+CREATE TABLE resources (
+    id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    inventory_number VARCHAR(100) UNIQUE NOT NULL,
+    resource_type    VARCHAR(50) NOT NULL
+                     CHECK (resource_type IN ('ordinateur','imprimante')),
+    brand            VARCHAR(255),
+    status           VARCHAR(50) DEFAULT 'available'
+                     CHECK (status IN (
+                       'available','assigned','maintenance','returned'
+                     )),
+    offer_id         UUID REFERENCES offers(id),
+    supplier_id      UUID REFERENCES suppliers(id),
+    warranty_end     DATE,
+    specs            JSONB,
+    created_at       TIMESTAMP DEFAULT NOW()
+);
+\end{lstlisting}
+
+\section{Choix de Conception}
+
+\subsection{Utilisation des UUID}
+
+Toutes les clés primaires utilisent le type UUID (v4) plutôt que des entiers auto-incrémentés :
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Sécurité} : les UUID ne sont pas prédictibles, réduisant les risques d'énumération
+    \item \textbf{Distribution} : possibilité de générer des IDs côté client sans coordination avec la DB
+    \item \textbf{Fusion de données} : facilite la migration ou la fusion de bases de données
+\end{itemize}
+
+\subsection{Utilisation du Type JSONB}
+
+Les colonnes \texttt{specs} (ressources et besoins) utilisent le type JSONB de PostgreSQL :
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Flexibilité} : les spécifications d'un ordinateur diffèrent de celles d'une imprimante sans nécessiter des tables séparées
+    \item \textbf{Indexabilité} : JSONB peut être indexé avec GIN pour des recherches rapides
+    \item \textbf{Contraintes} : les contraintes CHECK garantissent l'intégrité du reste des colonnes
+\end{itemize}
+
+\subsection{Gestion de l'Historique des Affectations}
+
+La table \texttt{assignments} conserve l'historique complet grâce à la colonne \texttt{is\_active} :
+
+\begin{lstlisting}[style=sql, caption={Requête — Affectation active d'une ressource}]
+-- Affecter une ressource: desactiver l'affectation en cours
+UPDATE assignments
+SET is_active = FALSE, returned_date = NOW()
+WHERE resource_id = $1 AND is_active = TRUE;
+
+-- Creer la nouvelle affectation
+INSERT INTO assignments
+    (resource_id, department_id, assigned_user_id)
+VALUES ($1, $2, $3);
+
+-- Mettre a jour le statut de la ressource
+UPDATE resources SET status = 'assigned' WHERE id = $1;
+\end{lstlisting}
+
+%==========================================================
+\chapter{Architecture de Sécurité}
+%==========================================================
+
+\section{Vue d'Ensemble du Modèle de Sécurité}
+
+Le système GRM implémente une sécurité en profondeur (\textit{defense in depth}) avec plusieurs couches de protection :
+
+\begin{center}
+\begin{verbatim}
+  ┌──────────────────────────────────────────────┐
+  │  COUCHE 1 — Transport (HTTPS/TLS)            │
+  │  Chiffrement de toutes les communications    │
+  └──────────────────────┬───────────────────────┘
+                         ▼
+  ┌──────────────────────────────────────────────┐
+  │  COUCHE 2 — Authentification (JWT)           │
+  │  Vérification de l'identité à chaque requête │
+  └──────────────────────┬───────────────────────┘
+                         ▼
+  ┌──────────────────────────────────────────────┐
+  │  COUCHE 3 — Autorisation (RBAC)              │
+  │  Vérification du droit d'accès par rôle     │
+  └──────────────────────┬───────────────────────┘
+                         ▼
+  ┌──────────────────────────────────────────────┐
+  │  COUCHE 4 — Protection des Données           │
+  │  Requêtes paramétrées (anti-injection SQL)   │
+  │  Hachage bcrypt des mots de passe            │
+  └──────────────────────────────────────────────┘
+\end{verbatim}
+\end{center}
+
+\section{Authentification par Jeton JWT}
+
+\subsection{Structure du Token}
+
+Un token JWT se compose de trois parties encodées en Base64URL et séparées par des points :
+
+\begin{center}
+\texttt{header.payload.signature}
+\end{center}
+
+\textbf{Header :}
+\begin{lstlisting}[style=js]
+{ "alg": "HS256", "typ": "JWT" }
+\end{lstlisting}
+
+\textbf{Payload (claims) :}
+\begin{lstlisting}[style=js]
+{
+  "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "role": "responsable",
+  "department_id": null,
+  "supplier_id": null,
+  "iat": 1715000000,   // Date d'emission (Unix timestamp)
+  "exp": 1715086400    // Date d'expiration (24h plus tard)
+}
+\end{lstlisting}
+
+\textbf{Signature :}
+\begin{center}
+\texttt{HMAC-SHA256(base64(header) + "." + base64(payload), JWT\_SECRET)}
+\end{center}
+
+\subsection{Middleware d'Authentification}
+
+\begin{lstlisting}[style=js, caption={auth.js — Middleware authenticate}]
+const authenticate = (req, res, next) => {
+    const header = req.headers.authorization;
+
+    // Verification de la presence du token
+    if (!header)
+        return res.status(401).json({ error: 'No token provided' });
+
+    const token = header.split(' ')[1]; // Extraction du Bearer token
+    try {
+        // Verification de la signature et de l'expiration
+        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        next(); // Transmission a la route suivante
+    } catch {
+        res.status(401).json({ error: 'Invalid token' });
+    }
+};
+\end{lstlisting}
+
+\section{Contrôle d'Accès par Rôle (RBAC)}
+
+\subsection{Matrice des Autorisations}
+
+\begin{longtable}{|L{4cm}|C{1.5cm}|C{1.5cm}|C{1.5cm}|C{1.5cm}|C{1.5cm}|}
+\caption{Matrice RBAC complète} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Action}} & \textcolor{white}{\textbf{Resp.}} & \textcolor{white}{\textbf{Chef}} & \textcolor{white}{\textbf{Ensgt}} & \textcolor{white}{\textbf{Tech.}} & \textcolor{white}{\textbf{Fsseur}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Action} & \textbf{Resp.} & \textbf{Chef} & \textbf{Ensgt} & \textbf{Tech.} & \textbf{Fsseur} \\
+\hline
+\endhead
+Créer un AO & ✓ & ✓ & & & \\
+\hline
+Fermer un AO & ✓ & & & & \\
+\hline
+Consulter les AO & ✓ & ✓ & & & ✓ \\
+\hline
+Soumettre une offre & & & & & ✓ \\
+\hline
+Accepter/Rejeter une offre & ✓ & & & & \\
+\hline
+Créer une ressource & ✓ & & & & \\
+\hline
+Modifier une ressource & ✓ & & & & \\
+\hline
+Supprimer une ressource & ✓ & & & & \\
+\hline
+Affecter une ressource & ✓ & & & & \\
+\hline
+Consulter les ressources & ✓ & ✓ & ✓ & & \\
+\hline
+Blacklister un fournisseur & ✓ & & & & \\
+\hline
+Consulter les fournisseurs & ✓ & & & & \\
+\hline
+Signaler une panne & & ✓ & ✓ & & \\
+\hline
+Rédiger un constat & & & & ✓ & \\
+\hline
+Décider retour fournisseur & ✓ & & & & \\
+\hline
+Résoudre une panne & ✓ & & & ✓ & \\
+\hline
+Gérer les départements & ✓ & & & & \\
+\hline
+\end{longtable}
+
+\section{Protection contre les Injections SQL}
+
+Toutes les interactions avec la base de données utilisent des requêtes paramétrées (\textit{prepared statements}) :
+
+\begin{lstlisting}[style=js, caption={Bonne pratique — Requêtes paramétrées}]
+// CORRECT: parametres separes de la requete
+const { rows } = await pool.query(
+    'SELECT * FROM users WHERE email = $1', [email]
+);
+
+// INCORRECT: concatenation dangereuse (injection SQL possible)
+// await pool.query(`SELECT * FROM users WHERE email = '${email}'`);
+\end{lstlisting}
+
+%==========================================================
+\chapter{Diagrammes de Séquence}
+%==========================================================
+
+\section{Diagramme 1 — Processus de Connexion}
+
+\begin{verbatim}
+Utilisateur    Navigateur (React)    Backend API         PostgreSQL
+     │                │                   │                  │
+     │──[Saisit email+mdp]──►             │                  │
+     │                │──POST /api/auth/login─►              │
+     │                │                   │──SELECT user WHERE email=$1──►│
+     │                │                   │◄──{ user_row }───────────────│
+     │                │                   │                  │
+     │                │           [bcrypt.compare(mdp, hash)]│
+     │                │                   │                  │
+     │                │           [jwt.sign({id,role}, secret)]
+     │                │                   │                  │
+     │                │◄──200 { token, user }──              │
+     │                │[localStorage.setItem(token)]         │
+     │                │[Axios header: Bearer token]          │
+     │◄──[Redirection Dashboard]          │                  │
+\end{verbatim}
+
+\section{Diagramme 2 — Soumission d'une Offre}
+
+\begin{verbatim}
+Fournisseur   React Frontend    Middleware JWT    offerController    PostgreSQL
+     │               │                │                │                │
+     │──[Formulaire]─►               │                │                │
+     │               │──POST /api/offers/tender/:id──►│                │
+     │               │               │──[Vérif JWT]   │                │
+     │               │               │──[Rôle=fournisseur]            │
+     │               │               │──────────────────►[connect()]───►│
+     │               │               │                │──BEGIN          │
+     │               │               │                │──SELECT is_blacklisted WHERE id=$1──►│
+     │               │               │                │◄──{is_blacklisted: false}────────────│
+     │               │               │                │──INSERT INTO offers VALUES(...)──────►│
+     │               │               │                │◄──{ offer_row }──────────────────────│
+     │               │               │                │──INSERT INTO offer_items (loop)──────►│
+     │               │               │                │──COMMIT         │
+     │               │               │                │──[release()]    │
+     │               │◄──201 { offer }─────────────────               │
+     │◄──[Confirmation]              │                │                │
+\end{verbatim}
+
+\section{Diagramme 3 — Signalement et Traitement d'une Panne}
+
+\begin{verbatim}
+Enseignant    Technicien    Responsable    Backend API         PostgreSQL
+     │             │              │              │                  │
+     │──[Signale panne]─────────────────────────►                  │
+     │                            │    POST /api/breakdowns         │
+     │                            │              │──INSERT breakdowns──►│
+     │                            │              │──UPDATE resources SET status='maintenance'─►│
+     │                            │              │◄──201 { breakdown }──────────────────────│
+     │                            │              │                  │
+     │          [Technicien consulte pannes]      │                  │
+     │             │──GET /api/breakdowns─────────►                 │
+     │             │◄──[liste pannes ouvertes]─────                 │
+     │             │                              │                  │
+     │             │──[Rédige constat]──────────────────────────────►│
+     │             │  POST /api/breakdowns/:id/maintenance-report   │
+     │             │◄──201 { report }──────────────────────────────│
+     │             │                              │                  │
+     │                            │──[Consulte constat]──────────────►│
+     │                            │  GET /api/breakdowns/:id        │
+     │                            │◄──{ breakdown + reports }────────│
+     │                            │                                  │
+     │                            │──[Décide retour fournisseur]──────►│
+     │                            │  PATCH /api/breakdowns/:id/return-to-supplier
+     │                            │              │──UPDATE breakdowns SET status='returned_...'─►│
+     │                            │              │──UPDATE resources SET status='returned'──────►│
+     │                            │◄──200 { message }──────────────│
+\end{verbatim}
+
+%==========================================================
+\chapter{Architecture de Déploiement}
+%==========================================================
+
+\section{Environnements}
+
+\begin{longtable}{|L{2.5cm}|L{3.5cm}|L{3.5cm}|L{4cm}|}
+\caption{Description des environnements} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Env.}} & \textcolor{white}{\textbf{Usage}} & \textcolor{white}{\textbf{Configuration}} & \textcolor{white}{\textbf{Base de données}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Env.} & \textbf{Usage} & \textbf{Configuration} & \textbf{Base de données} \\
+\hline
+\endhead
+Développement & Développement local & \texttt{.env} local, hot-reload (nodemon + CRA) & PostgreSQL local / Docker \\
+\hline
+Test & Tests automatisés & Variables d'env. dédiées & Base de données de test isolée \\
+\hline
+Production & Déploiement final & Docker Compose, HTTPS & PostgreSQL avec volume persistant \\
+\hline
+\end{longtable}
+
+\section{Diagramme de Déploiement Docker}
+
+\begin{center}
+\begin{verbatim}
+  ╔══════════════════════════════════════════════════════════╗
+  ║              Hôte Docker (Serveur Linux)                 ║
+  ║                                                          ║
+  ║  ┌──────────────────────────────────────────────────┐   ║
+  ║  │           docker-compose.yml                     │   ║
+  ║  │                                                  │   ║
+  ║  │  ┌─────────────────┐    ┌──────────────────┐    │   ║
+  ║  │  │  service: db    │    │ service: backend │    │   ║
+  ║  │  │  postgres:15    │◄───│ node:20-alpine   │    │   ║
+  ║  │  │  port: 5432     │    │ port: 5000       │    │   ║
+  ║  │  │  volume: pgdata │    │ ENV: DB_HOST=db  │    │   ║
+  ║  │  └─────────────────┘    └────────▲─────────┘    │   ║
+  ║  │                                  │               │   ║
+  ║  │  ┌───────────────────────────────┴───────────┐  │   ║
+  ║  │  │  service: frontend                        │  │   ║
+  ║  │  │  nginx:alpine — port: 80                  │  │   ║
+  ║  │  │  /usr/share/nginx/html ← build React      │  │   ║
+  ║  │  │  location /api → proxy_pass backend:5000  │  │   ║
+  ║  │  └───────────────────────────────────────────┘  │   ║
+  ║  └──────────────────────────────────────────────────┘   ║
+  ║                                                          ║
+  ╚══════════════════════════════════════════════════════════╝
+                          │ Port 80 (HTTP) / 443 (HTTPS)
+                    [Internet / Réseau Faculté]
+                          │
+               [Navigateur Client]
+\end{verbatim}
+\end{center}
+
+\section{Configuration Docker Compose}
+
+\begin{lstlisting}[style=bash, caption={docker-compose.yml — Configuration complète}]
+version: '3.8'
+services:
+  # Service PostgreSQL avec persistance
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: grm_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  # Service API Node.js
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports: ["5000:5000"]
+    environment:
+      DB_HOST: db           # Nom du service Docker
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy  # Attend que PostgreSQL soit pret
+
+  # Service Frontend (Nginx + build React)
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports: ["80:80"]
+    depends_on: [backend]
+
+volumes:
+  pgdata:   # Volume nomme pour la persistance des donnees
+\end{lstlisting}
+
+\section{Build Multi-Étapes du Frontend}
+
+\begin{lstlisting}[style=bash, caption={frontend/Dockerfile — Build multi-étapes}]
+# Etape 1: Build de l'application React
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci                   # Installation reproductible (lockfile)
+COPY . .
+RUN npm run build            # Production build optimise
+
+# Etape 2: Serveur Nginx pour le build statique
+FROM nginx:alpine
+# Copie uniquement les artefacts de build (pas les sources)
+COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+\end{lstlisting}
+
+\section{Configuration Nginx}
+
+\begin{lstlisting}[style=bash, caption={nginx.conf — Configuration du reverse proxy}]
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # SPA: toutes les routes non-trouvees renvoient index.html
+    # (React Router gere le routing cote client)
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy des appels API vers le backend Node.js
+    location /api {
+        proxy_pass http://backend:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+\end{lstlisting}
+
+%==========================================================
+\chapter{Stratégie de Tests}
+%==========================================================
+
+\section{Niveaux de Tests}
+
+\begin{longtable}{|L{3cm}|L{4.5cm}|L{4.5cm}|L{2cm}|}
+\caption{Stratégie de tests} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Niveau}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Outils}} & \textcolor{white}{\textbf{Couverture}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Niveau} & \textbf{Description} & \textbf{Outils} & \textbf{Couverture} \\
+\hline
+\endhead
+Tests Unitaires & Test de fonctions isolées (middleware auth, validations) & Jest, jest-mock & Middleware, utilitaires \\
+\hline
+Tests d'Intégration & Test des endpoints API avec une vraie DB de test & Supertest + Jest & Tous les endpoints \\
+\hline
+Tests E2E & Simulation du parcours utilisateur complet & Cypress & Scénarios critiques \\
+\hline
+Tests Manuels & Validation fonctionnelle avec les comptes de test & Navigateur & Interface utilisateur \\
+\hline
+\end{longtable}
+
+\section{Exemples de Tests d'Intégration}
+
+\begin{lstlisting}[style=js, caption={Tests d'intégration — Authentification}]
+describe('POST /api/auth/login', () => {
+    it('retourne un JWT valide pour des credentials corrects', async () => {
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({
+                email: 'responsable@faculte.ma',
+                password: 'admin123'
+            });
+
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveProperty('token');
+        expect(res.body.user.role).toBe('responsable');
+    });
+
+    it('retourne 401 pour un mot de passe incorrect', async () => {
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'responsable@faculte.ma', password: 'wrong' });
+
+        expect(res.status).toBe(401);
+        expect(res.body).toHaveProperty('error');
+    });
+});
+
+describe('POST /api/tenders', () => {
+    it('refuse la creation sans authentification', async () => {
+        const res = await request(app)
+            .post('/api/tenders')
+            .send({ title: 'Test AO' });
+
+        expect(res.status).toBe(401);
+    });
+
+    it('refuse la creation si role != responsable/chef', async () => {
+        // Authentification en tant que fournisseur
+        const loginRes = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'fournisseur@test.ma', password: 'mdp' });
+
+        const res = await request(app)
+            .post('/api/tenders')
+            .set('Authorization', `Bearer ${loginRes.body.token}`)
+            .send({ title: 'AO non autorise' });
+
+        expect(res.status).toBe(403);
+    });
+});
+\end{lstlisting}
+
+%==========================================================
+\chapter{Guide de Démarrage}
+%==========================================================
+
+\section{Prérequis}
+
+\begin{longtable}{|L{4cm}|L{4cm}|L{6cm}|}
+\caption{Prérequis d'installation} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Outil}} & \textcolor{white}{\textbf{Version minimale}} & \textcolor{white}{\textbf{Usage}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Outil} & \textbf{Version minimale} & \textbf{Usage} \\
+\hline
+\endhead
+Node.js & 18.x LTS & Exécution du backend et build frontend \\
+\hline
+npm & 9.x & Gestionnaire de paquets JavaScript \\
+\hline
+PostgreSQL & 14.x & Base de données relationnelle \\
+\hline
+Docker & 24.x & Conteneurisation (optionnel en dev) \\
+\hline
+Docker Compose & 2.x & Orchestration multi-conteneurs \\
+\hline
+Git & 2.x & Versionnement du code source \\
+\hline
+\end{tabularx}
+
+\section{Installation en Mode Développement}
+
+\begin{lstlisting}[style=bash, caption={Installation manuelle — Développement}]
+# 1. Cloner le depot
+git clone https://github.com/grm-project/grm.git
+cd grm
+
+# 2. Initialiser la base de donnees PostgreSQL
+psql -U postgres -c "CREATE DATABASE grm_db;"
+psql -U postgres -d grm_db -f backend/database/schema.sql
+
+# 3. Configurer le backend
+cd backend
+cp .env.example .env
+# Editer .env: DB_PASSWORD, JWT_SECRET
+
+npm install
+npm run dev
+# Serveur API: http://localhost:5000
+
+# 4. Configurer le frontend (dans un nouveau terminal)
+cd ../frontend
+npm install
+npm start
+# Application: http://localhost:3000
+\end{lstlisting}
+
+\section{Déploiement en Production (Docker)}
+
+\begin{lstlisting}[style=bash, caption={Déploiement production avec Docker Compose}]
+# 1. Configurer les variables de production
+cp .env.example .env.prod
+# Editer: DB_PASSWORD fort, JWT_SECRET aleatoire 256 bits
+
+# 2. Lancer tous les services
+docker-compose --env-file .env.prod up --build -d
+
+# 3. Verification du statut
+docker-compose ps
+# db         running (healthy)
+# backend    running
+# frontend   running
+
+# 4. Application disponible
+# http://votre-serveur.ma
+\end{lstlisting}
+
+\section{Comptes de Test Préconfigurés}
+
+\begin{longtable}{|L{5cm}|L{3cm}|L{3cm}|L{3cm}|}
+\caption{Comptes de test disponibles après initialisation} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Email}} & \textcolor{white}{\textbf{Mot de passe}} & \textcolor{white}{\textbf{Rôle}} & \textcolor{white}{\textbf{Département}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Email} & \textbf{Mot de passe} & \textbf{Rôle} & \textbf{Département} \\
+\hline
+\endhead
+responsable@faculte.ma & admin123 & responsable & — \\
+\hline
+chef.info@faculte.ma & admin123 & chef\_departement & Informatique \\
+\hline
+ahmed.benali@faculte.ma & admin123 & enseignant & Informatique \\
+\hline
+tech@faculte.ma & admin123 & technicien & — \\
+\hline
+\end{longtable}
+
+\end{document}

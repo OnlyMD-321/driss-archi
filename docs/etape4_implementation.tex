@@ -1,0 +1,392 @@
+\chapter{Étape 4 : Implémentation et Tests}
+
+\section{Structure du Projet}
+
+\begin{verbatim}
+grm-project/
+├── backend/
+│   ├── server.js              -- Point d'entrée Express
+│   ├── package.json
+│   ├── .env.example           -- Variables d'environnement
+│   ├── database/
+│   │   └── schema.sql         -- Schéma PostgreSQL + données initiales
+│   └── src/
+│       ├── config/
+│       │   └── database.js    -- Pool PostgreSQL
+│       ├── middleware/
+│       │   └── auth.js        -- JWT authenticate + RBAC authorize
+│       ├── controllers/       -- Logique métier (7 fichiers)
+│       └── routes/            -- Routes REST (7 fichiers)
+│
+├── frontend/
+│   ├── package.json
+│   ├── public/index.html
+│   └── src/
+│       ├── App.js             -- Routing principal
+│       ├── index.js           -- Point d'entrée React
+│       ├── context/
+│       │   └── AuthContext.js -- État global auth
+│       ├── services/
+│       │   └── api.js         -- Client Axios + intercepteurs
+│       ├── components/
+│       │   └── Layout/        -- Navigation + sidebar
+│       └── pages/
+│           ├── Login.js
+│           ├── Dashboard.js
+│           ├── Tenders/       -- Liste, Détail, Formulaire
+│           ├── Resources/     -- Liste, Détail
+│           ├── Suppliers/     -- Liste, Inscription
+│           ├── Breakdowns/    -- Liste, Détail
+│           └── Departments/   -- Liste et membres
+│
+└── docs/
+    ├── main.tex
+    ├── etape1_analyse.tex
+    ├── etape2_conception.tex
+    ├── etape3_architecture.tex
+    └── etape4_implementation.tex
+\end{verbatim}
+
+\section{API REST — Endpoints Implémentés}
+
+\subsection{Authentification}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Méthode} & \textbf{Route} & \textbf{Description} \\
+\hline
+POST & /api/auth/login & Authentification, retourne JWT \\
+\hline
+POST & /api/auth/register-supplier & Inscription fournisseur (utilisateur + société) \\
+\hline
+GET & /api/auth/profile & Profil utilisateur connecté \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Appels d'Offre}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Méthode} & \textbf{Route} & \textbf{Description} \\
+\hline
+GET & /api/tenders & Liste tous les appels d'offre \\
+\hline
+GET & /api/tenders/:id & Détail avec besoins \\
+\hline
+POST & /api/tenders & Créer (responsable, chef) \\
+\hline
+PUT & /api/tenders/:id & Modifier (responsable) \\
+\hline
+PATCH & /api/tenders/:id/close & Fermer l'appel (responsable) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Offres}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Méthode} & \textbf{Route} & \textbf{Description} \\
+\hline
+GET & /api/offers/tender/:tenderId & Offres d'un appel (triées par prix) \\
+\hline
+POST & /api/offers/tender/:tenderId & Soumettre une offre (fournisseur) \\
+\hline
+PATCH & /api/offers/:id/accept & Accepter une offre (responsable) \\
+\hline
+PATCH & /api/offers/:id/reject & Rejeter une offre avec motif \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Ressources}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Méthode} & \textbf{Route} & \textbf{Description} \\
+\hline
+GET & /api/resources & Liste toutes les ressources \\
+\hline
+GET & /api/resources/:id & Détail avec affectations et pannes \\
+\hline
+POST & /api/resources & Créer (responsable) \\
+\hline
+PUT & /api/resources/:id & Modifier (responsable) \\
+\hline
+DELETE & /api/resources/:id & Supprimer (responsable) \\
+\hline
+POST & /api/resources/:id/assign & Affecter à un département/personne \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Pannes}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Méthode} & \textbf{Route} & \textbf{Description} \\
+\hline
+GET & /api/breakdowns & Liste toutes les pannes \\
+\hline
+GET & /api/breakdowns/:id & Détail avec constats \\
+\hline
+POST & /api/breakdowns & Signaler une panne (enseignant, chef) \\
+\hline
+POST & /api/breakdowns/:id/maintenance-report & Soumettre constat (technicien) \\
+\hline
+PATCH & /api/breakdowns/:id/return-to-supplier & Retourner au fournisseur \\
+\hline
+PATCH & /api/breakdowns/:id/resolve & Résoudre la panne \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Extraits de Code}
+
+\subsection{Middleware d'Authentification JWT}
+
+\begin{lstlisting}[language=JavaScript, caption={src/middleware/auth.js}]
+const authenticate = (req, res, next) => {
+    const header = req.headers.authorization;
+    if (!header) return res.status(401).json({ error: 'No token provided' });
+
+    const token = header.split(' ')[1];
+    try {
+        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        next();
+    } catch {
+        res.status(401).json({ error: 'Invalid token' });
+    }
+};
+
+const authorize = (...roles) => (req, res, next) => {
+    if (!roles.includes(req.user.role))
+        return res.status(403).json({ error: 'Access denied' });
+    next();
+};
+\end{lstlisting}
+
+\subsection{Transaction PostgreSQL — Acceptation d'une Offre}
+
+\begin{lstlisting}[language=JavaScript, caption={src/controllers/offerController.js}]
+const accept = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        // Accepter l'offre selectionnee
+        const { rows } = await client.query(
+            `UPDATE offers SET status='accepted' WHERE id=$1 RETURNING *`,
+            [req.params.id]
+        );
+        // Rejeter automatiquement les autres offres du meme appel
+        await client.query(
+            `UPDATE offers SET status='rejected'
+             WHERE tender_id=$1 AND id != $2`,
+            [rows[0].tender_id, req.params.id]
+        );
+        // Marquer l'appel d'offre comme attribue
+        await client.query(
+            `UPDATE tenders SET status='awarded' WHERE id=$1`,
+            [rows[0].tender_id]
+        );
+        await client.query('COMMIT');
+        res.json(rows[0]);
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+};
+\end{lstlisting}
+
+\subsection{Context React — Authentification}
+
+\begin{lstlisting}[language=JavaScript, caption={src/context/AuthContext.js}]
+const login = async (email, password) => {
+    const { data } = await api.post('/auth/login', { email, password });
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+    setUser(data.user);
+    return data.user;
+};
+\end{lstlisting}
+
+\section{Installation et Démarrage}
+
+\subsection{Prérequis}
+
+\begin{itemize}
+    \item Node.js 18+
+    \item PostgreSQL 14+
+    \item npm ou yarn
+\end{itemize}
+
+\subsection{Configuration de la Base de Données}
+
+\begin{lstlisting}[language=SQL, caption={Initialisation}]
+-- Creer la base de donnees
+CREATE DATABASE grm_db;
+
+-- Executer le schema
+psql -U postgres -d grm_db -f backend/database/schema.sql
+\end{lstlisting}
+
+\subsection{Démarrage du Backend}
+
+\begin{lstlisting}[language=bash, caption={Backend setup}]
+cd backend
+cp .env.example .env
+# Editer .env avec vos parametres PostgreSQL et JWT_SECRET
+
+npm install
+npm run dev
+# Serveur demarre sur http://localhost:5000
+\end{lstlisting}
+
+\subsection{Démarrage du Frontend}
+
+\begin{lstlisting}[language=bash, caption={Frontend setup}]
+cd frontend
+npm install
+npm start
+# Application demarre sur http://localhost:3000
+\end{lstlisting}
+
+\subsection{Comptes de Test}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|}
+\hline
+\textbf{Email} & \textbf{Mot de passe} & \textbf{Rôle} \\
+\hline
+responsable@faculte.ma & admin123 & Responsable des ressources \\
+\hline
+chef.info@faculte.ma & admin123 & Chef de département Informatique \\
+\hline
+ahmed.benali@faculte.ma & admin123 & Enseignant \\
+\hline
+tech@faculte.ma & admin123 & Technicien de maintenance \\
+\hline
+\end{tabularx}
+\caption{Comptes prédéfinis pour les tests}
+\end{table}
+
+\section{Tests}
+
+\subsection{Tests Unitaires — Middleware d'Authentification}
+
+\begin{lstlisting}[language=JavaScript, caption={Tests JWT}]
+describe('authenticate middleware', () => {
+    it('should reject requests without token', () => {
+        const req = { headers: {} };
+        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+        authenticate(req, res, jest.fn());
+        expect(res.status).toHaveBeenCalledWith(401);
+    });
+
+    it('should accept valid JWT and set req.user', () => {
+        const token = jwt.sign({ id: '1', role: 'responsable' }, process.env.JWT_SECRET);
+        const req = { headers: { authorization: `Bearer ${token}` } };
+        const next = jest.fn();
+        authenticate(req, {}, next);
+        expect(next).toHaveBeenCalled();
+        expect(req.user.role).toBe('responsable');
+    });
+});
+\end{lstlisting}
+
+\subsection{Tests d'Intégration — API}
+
+\begin{lstlisting}[language=JavaScript, caption={Tests API avec Supertest}]
+describe('POST /api/auth/login', () => {
+    it('should return JWT for valid credentials', async () => {
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'responsable@faculte.ma', password: 'admin123' });
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveProperty('token');
+        expect(res.body.user.role).toBe('responsable');
+    });
+
+    it('should return 401 for invalid credentials', async () => {
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'wrong@test.com', password: 'wrong' });
+        expect(res.status).toBe(401);
+    });
+});
+\end{lstlisting}
+
+\section{Déploiement Docker}
+
+\begin{lstlisting}[language=bash, caption={docker-compose.yml}]
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: grm_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: db
+      DB_NAME: grm_db
+      DB_USER: postgres
+      DB_PASSWORD: secret
+      JWT_SECRET: change_this_in_production
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash, caption={Lancement complet}]
+docker-compose up --build
+# Application disponible sur http://localhost
+\end{lstlisting}
+
+\section{Conclusion}
+
+Le système GRM implémente l'ensemble des fonctionnalités décrites dans le cahier des charges :
+
+\begin{itemize}
+    \item \checkmark Gestion complète des appels d'offre (CRUD + cycle de vie)
+    \item \checkmark Soumission et sélection des offres fournisseurs avec notifications
+    \item \checkmark Mise en liste noire des fournisseurs non conformes
+    \item \checkmark Inventaire et affectation des ressources avec historique
+    \item \checkmark Signalement et suivi des pannes
+    \item \checkmark Constats de maintenance par les techniciens
+    \item \checkmark Retour de ressources défectueuses aux fournisseurs
+    \item \checkmark Authentification JWT et contrôle d'accès par rôle (RBAC)
+    \item \checkmark Interface responsive accessible à tous les acteurs
+\end{itemize}

@@ -1,0 +1,170 @@
+\chapter{Étape 1 : Analyse des Besoins}
+
+\section{Introduction}
+
+Ce chapitre présente l'analyse complète du cahier des charges du système de \textbf{Gestion des Ressources Matérielles (GRM)} d'une faculté. L'objectif est d'identifier les acteurs, les processus métier, et les exigences fonctionnelles et non fonctionnelles.
+
+\section{Présentation du Système}
+
+Le système GRM est une application web permettant de gérer le cycle de vie complet des ressources matérielles d'une faculté, depuis les appels d'offre jusqu'à la maintenance, en passant par l'attribution aux départements.
+
+\subsection{Périmètre}
+
+Le système couvre les processus suivants :
+\begin{enumerate}
+    \item Gestion des appels d'offre pour l'acquisition de ressources
+    \item Gestion des fournisseurs et sélection des offres
+    \item Réception, inventaire et affectation des ressources
+    \item Maintenance et traitement des pannes
+\end{enumerate}
+
+\section{Identification des Acteurs}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Acteur} & \textbf{Rôle et responsabilités} \\
+\hline
+Responsable des ressources & Administrateur principal du système. Gère les appels d'offre, sélectionne les fournisseurs, affecte les ressources, supervise la maintenance. \\
+\hline
+Chef de département & Recueille les besoins de son département auprès des enseignants, soumet les besoins au responsable, reçoit la liste des affectations prévues. \\
+\hline
+Enseignant & Exprime ses besoins en ressources, signale les pannes sur les ressources de son département. \\
+\hline
+Fournisseur (société) & S'inscrit sur le système, consulte les appels d'offre ouverts, soumet des propositions avec prix, garantie et délai de livraison. \\
+\hline
+Technicien de maintenance & Intervient auprès des départements pour diagnostiquer les pannes, rédige des constats détaillés. \\
+\hline
+\end{tabularx}
+\caption{Acteurs du système GRM}
+\end{table}
+
+\section{Processus Métier (BPMN)}
+
+\subsection{Processus 1 : Appel d'Offre}
+
+\begin{enumerate}
+    \item Le chef de département interroge les enseignants sur leurs besoins
+    \item Les enseignants transmettent leurs besoins (ordinateurs, imprimantes)
+    \item Réunion de concertation pour valider et ajuster les besoins
+    \item Le chef envoie les besoins consolidés au responsable
+    \item Le responsable rassemble les besoins de tous les départements
+    \item Le responsable publie un appel d'offre avec date de début et de fin
+    \item Les fournisseurs consultent l'appel et soumettent leurs offres
+    \item Le responsable élimine les fournisseurs en liste noire
+    \item Le responsable sélectionne l'offre la moins disante
+    \item Envoi des notifications d'acceptation/rejet aux fournisseurs
+\end{enumerate}
+
+\subsection{Processus 2 : Réception et Affectation des Ressources}
+
+\begin{enumerate}
+    \item Le fournisseur livraison les ressources
+    \item Le responsable affecte un numéro d'inventaire (code à barres) à chaque ressource
+    \item Si nouveau fournisseur : saisie des informations société (lieu, adresse, site, gérant)
+    \item Le responsable affecte les ressources aux départements (personne ou département entier)
+    \item Mise à jour automatique de la liste des ressources disponibles
+\end{enumerate}
+
+\subsection{Processus 3 : Maintenance}
+
+\begin{enumerate}
+    \item Un enseignant signale une panne sur une ressource
+    \item Un technicien intervient pour diagnostic
+    \item Si panne simple : réparation sur place, clôture du signalement
+    \item Si panne sévère : rédaction d'un constat (explication, date, fréquence, type)
+    \item Envoi du constat au responsable
+    \item Le responsable décide : réparation fournisseur ou remplacement (selon garantie)
+\end{enumerate}
+
+\section{Diagramme des Exigences}
+
+\subsection{Exigences Fonctionnelles}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{ID} & \textbf{Catégorie} & \textbf{Description} \\
+\hline
+EF-01 & Appels d'offre & Créer, modifier et fermer un appel d'offre \\
+\hline
+EF-02 & Appels d'offre & Définir les besoins par type et département \\
+\hline
+EF-03 & Fournisseurs & Inscription et gestion du compte fournisseur \\
+\hline
+EF-04 & Fournisseurs & Consultation des appels d'offre ouverts \\
+\hline
+EF-05 & Fournisseurs & Soumission d'une offre avec détail des prix \\
+\hline
+EF-06 & Fournisseurs & Mise en liste noire avec motif \\
+\hline
+EF-07 & Sélection & Comparaison et sélection de la meilleure offre \\
+\hline
+EF-08 & Sélection & Envoi de notifications d'acceptation/rejet \\
+\hline
+EF-09 & Ressources & Création et gestion de l'inventaire (CRUD) \\
+\hline
+EF-10 & Ressources & Affectation à un département ou une personne \\
+\hline
+EF-11 & Ressources & Consultation de l'historique des affectations \\
+\hline
+EF-12 & Maintenance & Signalement de panne par un enseignant \\
+\hline
+EF-13 & Maintenance & Rédaction d'un constat par le technicien \\
+\hline
+EF-14 & Maintenance & Décision de réparation/retour fournisseur \\
+\hline
+EF-15 & Auth & Authentification sécurisée par rôle \\
+\hline
+\end{tabularx}
+\caption{Exigences fonctionnelles}
+\end{table}
+
+\subsection{Exigences Non Fonctionnelles}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{ID} & \textbf{Catégorie} & \textbf{Description} \\
+\hline
+ENF-01 & Sécurité & Authentification JWT avec expiration des tokens \\
+\hline
+ENF-02 & Sécurité & Contrôle d'accès basé sur les rôles (RBAC) \\
+\hline
+ENF-03 & Sécurité & Mots de passe hachés (bcrypt, coût 10) \\
+\hline
+ENF-04 & Performance & Temps de réponse API < 500ms pour 95\% des requêtes \\
+\hline
+ENF-05 & Disponibilité & Disponibilité 99.5\% en heures ouvrables \\
+\hline
+ENF-06 & Traçabilité & Journalisation de toutes les actions critiques \\
+\hline
+ENF-07 & Maintenabilité & Architecture modulaire (séparation controllers/routes) \\
+\hline
+ENF-08 & Scalabilité & Architecture stateless permettant la montée en charge \\
+\hline
+ENF-09 & Ergonomie & Interface responsive adaptée aux navigateurs modernes \\
+\hline
+\end{tabularx}
+\caption{Exigences non fonctionnelles}
+\end{table}
+
+\section{Modèle Conceptuel des Données}
+
+Les entités principales du système sont :
+
+\begin{itemize}
+    \item \textbf{Utilisateur} : id, nom, email, mot de passe (haché), rôle, département
+    \item \textbf{Département} : id, nom
+    \item \textbf{Fournisseur} : id, société, lieu, adresse, site web, gérant, liste noire
+    \item \textbf{AppelOffre} : id, titre, description, date début, date fin, statut
+    \item \textbf{BesoinRessource} : id, type (ordinateur/imprimante), quantité, spécifications
+    \item \textbf{Offre} : id, fournisseur, date livraison, garantie (mois), prix total, statut
+    \item \textbf{Ressource} : id, numéro inventaire, type, marque, statut, garantie, spécifications
+    \item \textbf{Affectation} : id, ressource, département, utilisateur, date
+    \item \textbf{Panne} : id, ressource, description, statut, date
+    \item \textbf{ConstatMaintenance} : id, panne, technicien, explication, fréquence, type ordre
+\end{itemize}

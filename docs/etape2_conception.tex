@@ -1,0 +1,274 @@
+\chapter{Étape 2 : Conception UML}
+
+\section{Introduction}
+
+Cette étape transforme les exigences identifiées en un modèle UML complet. Nous présentons les diagrammes de cas d'utilisation, de classes, de packages et les maquettes IHM (wireframes).
+
+\section{Diagramme de Cas d'Utilisation}
+
+\subsection{Acteurs et Cas d'Utilisation Principaux}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Acteur} & \textbf{Cas d'utilisation accessibles} \\
+\hline
+Responsable des ressources &
+  Créer appel d'offre, Fermer appel d'offre,
+  Gérer fournisseurs, Sélectionner offre,
+  Blacklister fournisseur, Gérer ressources,
+  Affecter ressource, Décider retour fournisseur \\
+\hline
+Chef de département &
+  Soumettre besoins, Consulter affectations prévues,
+  Signaler panne, Créer appel d'offre (partiel) \\
+\hline
+Enseignant &
+  Exprimer besoins (via chef), Signaler panne,
+  Consulter ressources affectées \\
+\hline
+Fournisseur &
+  S'inscrire, Consulter appels d'offre,
+  Soumettre offre \\
+\hline
+Technicien de maintenance &
+  Consulter pannes, Rédiger constat de panne,
+  Résoudre panne \\
+\hline
+\end{tabularx}
+\caption{Mapping acteurs -- cas d'utilisation}
+\end{table}
+
+\subsection{Description des Cas d'Utilisation Principaux}
+
+\paragraph{UC01 — Créer un appel d'offre}
+\begin{itemize}
+    \item \textbf{Acteur principal :} Responsable des ressources
+    \item \textbf{Précondition :} L'utilisateur est authentifié avec le rôle \texttt{responsable}
+    \item \textbf{Scénario nominal :}
+    \begin{enumerate}
+        \item Le responsable accède au formulaire de création
+        \item Il saisit le titre, la description, les dates de début et de fin
+        \item Il ajoute les besoins en ressources par département
+        \item Le système crée l'appel d'offre au statut "ouvert"
+        \item Les fournisseurs non blacklistés peuvent consulter l'appel
+    \end{enumerate}
+    \item \textbf{Postcondition :} Appel d'offre créé, visible par les fournisseurs
+\end{itemize}
+
+\paragraph{UC02 — Soumettre une offre}
+\begin{itemize}
+    \item \textbf{Acteur principal :} Fournisseur
+    \item \textbf{Précondition :} Fournisseur inscrit, non blacklisté, appel ouvert
+    \item \textbf{Scénario nominal :}
+    \begin{enumerate}
+        \item Le fournisseur consulte les appels d'offre ouverts
+        \item Il sélectionne un appel et remplit le formulaire d'offre
+        \item Il indique la date de livraison, la durée de garantie, le prix total
+        \item Il détaille le prix unitaire par type de ressource
+        \item Le système enregistre l'offre au statut "en attente"
+    \end{enumerate}
+    \item \textbf{Exception :} Si le fournisseur est blacklisté → erreur 403
+\end{itemize}
+
+\paragraph{UC03 — Sélectionner une offre}
+\begin{itemize}
+    \item \textbf{Acteur principal :} Responsable des ressources
+    \item \textbf{Précondition :} Des offres ont été soumises
+    \item \textbf{Scénario nominal :}
+    \begin{enumerate}
+        \item Le responsable visualise toutes les offres triées par prix croissant
+        \item Il élimine les fournisseurs non conformes (blacklist)
+        \item Il sélectionne l'offre la moins disante
+        \item Le système envoie une notification d'acceptation au fournisseur retenu
+        \item Le système envoie les notifications de rejet aux autres fournisseurs
+        \item L'appel d'offre passe au statut "attribué"
+    \end{enumerate}
+\end{itemize}
+
+\paragraph{UC04 — Signaler une panne}
+\begin{itemize}
+    \item \textbf{Acteur principal :} Enseignant ou Chef de département
+    \item \textbf{Précondition :} Ressource affectée au département
+    \item \textbf{Scénario nominal :}
+    \begin{enumerate}
+        \item L'enseignant sélectionne la ressource défectueuse
+        \item Il saisit une description de la panne
+        \item Le système crée un ticket de panne au statut "ouvert"
+        \item La ressource passe au statut "maintenance"
+        \item Un technicien est notifié pour intervention
+    \end{enumerate}
+\end{itemize}
+
+\section{Diagramme de Classes}
+
+\subsection{Classes Principales}
+
+\begin{verbatim}
++-------------------+       +-------------------+
+|      User         |       |    Department     |
++-------------------+       +-------------------+
+| - id: UUID        |       | - id: UUID        |
+| - name: String    |*------| - name: String    |
+| - email: String   |       +-------------------+
+| - password: String|
+| - role: Enum      |
++-------------------+
+         |
+         | 1
+         |
++-------------------+       +-------------------+
+|    Supplier       |       |      Tender       |
++-------------------+       +-------------------+
+| - id: UUID        |       | - id: UUID        |
+| - companyName     |       | - title: String   |
+| - location        |1    * | - startDate: Date |
+| - address         |-------| - endDate: Date   |
+| - website         |       | - status: Enum    |
+| - isBlacklisted   |       +-------------------+
+| - blacklistReason |                |
++-------------------+               | 1
+         |                          |*
+         |                  +-------------------+
+         |*                 |    TenderNeed     |
++-------------------+       +-------------------+
+|      Offer        |       | - resourceType    |
++-------------------+       | - quantity: Int   |
+| - id: UUID        |       | - specs: JSON     |
+| - deliveryDate    |       +-------------------+
+| - warrantyMonths  |
+| - totalPrice      |
+| - status: Enum    |
++-------------------+
+         |
+         |*
++-------------------+       +-------------------+
+|    OfferItem      |       |    Resource       |
++-------------------+       +-------------------+
+| - resourceType    |       | - id: UUID        |
+| - brand: String   |*------| - inventoryNumber |
+| - unitPrice       |       | - resourceType    |
+| - quantity        |       | - brand: String   |
++-------------------+       | - status: Enum    |
+                            | - warrantyEnd     |
+                            | - specs: JSON     |
+                            +-------------------+
+                                     |
+                                     |*
+                            +-------------------+
+                            |   Assignment      |
+                            +-------------------+
+                            | - assignedDate    |
+                            | - isActive: Bool  |
+                            +-------------------+
+\end{verbatim}
+
+\subsection{Énumérations}
+
+\begin{itemize}
+    \item \textbf{UserRole} : \texttt{responsable | chef\_departement | enseignant | fournisseur | technicien}
+    \item \textbf{TenderStatus} : \texttt{draft | open | closed | awarded}
+    \item \textbf{OfferStatus} : \texttt{pending | accepted | rejected}
+    \item \textbf{ResourceStatus} : \texttt{available | assigned | maintenance | returned}
+    \item \textbf{BreakdownStatus} : \texttt{open | in\_progress | resolved | returned\_to\_supplier}
+    \item \textbf{Frequency} : \texttt{rare | frequente | permanente}
+    \item \textbf{OrderType} : \texttt{logiciel | materiel}
+\end{itemize}
+
+\section{Diagramme de Packages}
+
+L'application est organisée en packages suivants :
+
+\subsection{Backend}
+
+\begin{verbatim}
+grm-backend/
+├── config/          -- Configuration (DB, variables d'env)
+├── middleware/      -- Authentification JWT, autorisation RBAC
+├── controllers/     -- Logique métier
+│   ├── authController
+│   ├── tenderController
+│   ├── offerController
+│   ├── resourceController
+│   ├── supplierController
+│   ├── breakdownController
+│   └── departmentController
+├── routes/          -- Définition des routes REST
+└── database/        -- Schéma SQL et migrations
+\end{verbatim}
+
+\subsection{Frontend}
+
+\begin{verbatim}
+grm-frontend/
+├── context/         -- État global (AuthContext)
+├── services/        -- Client HTTP (Axios)
+├── components/      -- Composants réutilisables
+│   └── Layout/      -- Navigation, en-tête
+└── pages/           -- Pages par domaine fonctionnel
+    ├── Tenders/     -- Appels d'offre
+    ├── Resources/   -- Ressources
+    ├── Suppliers/   -- Fournisseurs
+    ├── Breakdowns/  -- Pannes
+    └── Departments/ -- Départements
+\end{verbatim}
+
+\section{Maquettes IHM (Wireframes)}
+
+\subsection{Page de Connexion}
+
+\begin{verbatim}
++------------------------------------------+
+|                                          |
+|          ⚙ GRM                          |
+|   Gestion des Ressources Matérielles     |
+|                                          |
+|  +------------------------------------+  |
+|  | Email                              |  |
+|  | [_________________________________]|  |
+|  |                                    |  |
+|  | Mot de passe                       |  |
+|  | [_________________________________]|  |
+|  |                                    |  |
+|  | [     Se connecter               ] |  |
+|  +------------------------------------+  |
+|  Fournisseur ? S'inscrire               |
++------------------------------------------+
+\end{verbatim}
+
+\subsection{Tableau de Bord}
+
+\begin{verbatim}
++----------+------------------------------------------+
+| SIDEBAR  | Bonjour, [NOM]                          |
+|          |                                         |
+| Tableau  | +--------+ +--------+ +--------+ +----+ |
+| de bord  | | AO     | | Ress.  | | Fssrs  | |Pan.| |
+|          | | 12     | | 87     | | 23     | | 3  | |
+| Appels   | +--------+ +--------+ +--------+ +----+ |
+| d'offre  |                                         |
+|          | Activité récente...                     |
+| Ressourc.|                                         |
+|          |                                         |
+| Fourniss.|                                         |
+|          |                                         |
+| Pannes   |                                         |
++----------+-----------------------------------------+
+\end{verbatim}
+
+\subsection{Liste des Appels d'Offre}
+
+\begin{verbatim}
++-----------------------------------------------------+
+| Appels d'offre                    [+ Nouveau]       |
++-----------------------------------------------------+
+| [Titre AO 1]                     [OUVERT]           |
+|  Du 01/01/2026 au 31/01/2026                       |
+|  5 offres reçues • Créé par Responsable Ressources  |
++-----------------------------------------------------+
+| [Titre AO 2]                     [ATTRIBUÉ]         |
+|  Du 15/12/2025 au 15/01/2026                       |
+|  3 offres reçues • Créé par Chef Informatique       |
++-----------------------------------------------------+
+\end{verbatim}

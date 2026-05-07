@@ -1,0 +1,940 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+\usepackage{mdframed}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm}
+
+%----------- Couleurs -----------
+\definecolor{primary}{RGB}{30,41,59}
+\definecolor{accent}{RGB}{59,130,246}
+\definecolor{success}{RGB}{16,185,129}
+\definecolor{warning}{RGB}{245,158,11}
+\definecolor{danger}{RGB}{239,68,68}
+\definecolor{lightgray}{RGB}{248,250,252}
+\definecolor{bordergray}{RGB}{226,232,240}
+
+%----------- Hyperlinks -----------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accent,
+    urlcolor=accent,
+    pdftitle={Document de Spécification - GRM},
+    pdfauthor={Équipe GRM}
+}
+
+%----------- En-tête / Pied de page -----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{primary}\textbf{GRM} — Document de Spécification}
+\fancyhead[R]{\small\color{primary}\leftmark}
+\fancyfoot[L]{\small\color{gray}Confidentiel — Usage interne}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\small\color{gray}\today}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+%----------- Titres de chapitres -----------
+\titleformat{\chapter}[block]
+  {\normalfont\Large\bfseries\color{primary}}
+  {\thechapter.}{0.8em}{}[\vspace{-4pt}\color{accent}\rule{\textwidth}{2pt}\vspace{6pt}]
+\titlespacing*{\chapter}{0pt}{0pt}{16pt}
+
+\titleformat{\section}{\normalfont\large\bfseries\color{primary}}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries\color{primary}}{\thesubsection}{0.8em}{}
+
+%----------- Boîtes personnalisées -----------
+\tcbset{
+  exigbox/.style={
+    colback=lightgray,
+    colframe=bordergray,
+    fonttitle=\bfseries\small,
+    boxrule=0.5pt,
+    arc=4pt,
+    left=6pt, right=6pt, top=4pt, bottom=4pt
+  }
+}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+%==========================================================
+\begin{document}
+%==========================================================
+
+%----------- PAGE DE GARDE -----------
+\begin{titlepage}
+\pagecolor{primary}
+\color{white}
+\vspace*{2cm}
+\begin{center}
+    {\fontsize{38}{46}\selectfont\bfseries GRM}\\[0.4cm]
+    {\Large\bfseries Gestion des Ressources Matérielles}\\[2.5cm]
+
+    \colorbox{accent}{\parbox{0.85\textwidth}{\centering\vspace{0.4cm}
+    {\huge\bfseries Document de Spécification}\\[0.2cm]
+    {\large Analyse des Besoins \& Cahier des Charges Fonctionnel}
+    \vspace{0.4cm}}}
+
+    \vspace{2.5cm}
+
+    \begin{tabular}{ll}
+        \textbf{Projet} & Gestion des Ressources Matérielles \\[4pt]
+        \textbf{Établissement} & Ynov Campus \\[4pt]
+        \textbf{Filière} & M1 Informatique — Architecture Logicielle \\[4pt]
+        \textbf{Responsable pédagogique} & Pr. Driss \\[4pt]
+        \textbf{Version} & 1.0 \\[4pt]
+        \textbf{Date} & \today \\[4pt]
+        \textbf{Statut} & \textcolor{success}{Approuvé} \\
+    \end{tabular}
+
+    \vspace{3cm}
+    {\small\color{gray} Ce document est confidentiel et destiné à un usage interne uniquement.}
+\end{center}
+\end{titlepage}
+\pagecolor{white}\color{black}
+
+%----------- HISTORIQUE DES RÉVISIONS -----------
+\chapter*{Historique des Révisions}
+\addcontentsline{toc}{chapter}{Historique des Révisions}
+\begin{tabularx}{\textwidth}{|C{1.8cm}|C{2.5cm}|L{4.5cm}|L{4.5cm}|}
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Version}} & \textcolor{white}{\textbf{Date}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Auteur}} \\
+\hline
+0.1 & 01/04/2025 & Rédaction initiale & Équipe GRM \\
+\hline
+0.5 & 15/04/2025 & Ajout des cas d'utilisation & Équipe GRM \\
+\hline
+0.9 & 30/04/2025 & Révision après réunion client & Équipe GRM \\
+\hline
+1.0 & \today & Version finale approuvée & Équipe GRM \\
+\hline
+\end{tabularx}
+
+%----------- TABLE DES MATIÈRES -----------
+\tableofcontents
+\newpage
+
+%==========================================================
+\chapter{Introduction Générale}
+%==========================================================
+
+\section{Contexte du Projet}
+
+La faculté gère un parc informatique conséquent réparti entre plusieurs départements académiques. Chaque année, l'acquisition de nouvelles ressources matérielles — ordinateurs, imprimantes — fait l'objet de procédures administratives complexes impliquant de nombreux acteurs : enseignants, chefs de département, responsable des ressources, fournisseurs et techniciens de maintenance.
+
+Actuellement, ces processus sont gérés manuellement à travers des échanges de courriels, des tableurs et des documents papier. Cette approche engendre des problèmes récurrents :
+
+\begin{itemize}[leftmargin=1.5cm]
+    \item Perte d'informations lors des transmissions entre acteurs
+    \item Absence de traçabilité des ressources et de leur historique d'affectation
+    \item Délais importants dans le traitement des appels d'offre
+    \item Difficultés à suivre l'état des pannes et des interventions de maintenance
+    \item Impossibilité de centraliser et de consulter l'inventaire en temps réel
+\end{itemize}
+
+\section{Objectifs du Projet}
+
+Le projet \textbf{GRM (Gestion des Ressources Matérielles)} vise à mettre en place un système d'information intégré permettant de :
+
+\begin{enumerate}[leftmargin=1.5cm]
+    \item \textbf{Centraliser} la gestion de toutes les ressources matérielles de la faculté
+    \item \textbf{Automatiser} le processus des appels d'offre, de la soumission à la sélection
+    \item \textbf{Tracer} chaque ressource depuis son acquisition jusqu'à sa mise au rebut
+    \item \textbf{Faciliter} la communication entre tous les acteurs du système
+    \item \textbf{Sécuriser} les accès aux données selon le rôle de chaque utilisateur
+    \item \textbf{Optimiser} la gestion de la maintenance et des pannes
+\end{enumerate}
+
+\section{Périmètre du Système}
+
+Le système GRM couvre les domaines fonctionnels suivants :
+
+\begin{tcolorbox}[exigbox, title=Domaines couverts par le système]
+\begin{enumerate}
+    \item \textbf{Module Appels d'Offre} : création, publication, réception et sélection des offres fournisseurs
+    \item \textbf{Module Fournisseurs} : inscription, gestion des profils, liste noire
+    \item \textbf{Module Ressources} : inventaire, affectation, suivi du cycle de vie
+    \item \textbf{Module Maintenance} : signalement de pannes, constats techniques, retour fournisseur
+    \item \textbf{Module Authentification} : gestion des comptes et des accès par rôle
+    \item \textbf{Module Départements} : gestion des unités organisationnelles et de leurs membres
+\end{enumerate}
+\end{tcolorbox}
+
+\section{Public Cible de ce Document}
+
+Ce document de spécification s'adresse aux parties prenantes suivantes :
+\begin{itemize}[leftmargin=1.5cm]
+    \item L'équipe de développement pour comprendre et implémenter les exigences
+    \item Le responsable pédagogique pour valider la conformité au cahier des charges
+    \item Les utilisateurs finaux pour valider que leurs besoins ont été correctement compris
+\end{itemize}
+
+\section{Conventions de Notation}
+
+\begin{tabularx}{\textwidth}{|C{2cm}|L{10cm}|}
+\hline
+\rowcolor{lightgray}\textbf{Notation} & \textbf{Signification} \\
+\hline
+\textbf{EF-XX} & Exigence Fonctionnelle numérotée \\
+\hline
+\textbf{ENF-XX} & Exigence Non Fonctionnelle numérotée \\
+\hline
+\textbf{UC-XX} & Cas d'utilisation (Use Case) numéroté \\
+\hline
+\textbf{RG-XX} & Règle de gestion numérotée \\
+\hline
+\textbf{[OBLIGATOIRE]} & L'exigence doit être implémentée dans la version courante \\
+\hline
+\textbf{[OPTIONNEL]} & L'exigence peut être différée à une version ultérieure \\
+\hline
+\end{tabularx}
+
+%==========================================================
+\chapter{Identification des Acteurs}
+%==========================================================
+
+\section{Vue d'Ensemble des Acteurs}
+
+Le système GRM implique cinq catégories d'acteurs distincts, chacun disposant de droits d'accès et de responsabilités spécifiques. Le tableau ci-dessous présente une synthèse de ces acteurs.
+
+\begin{longtable}{|L{3.5cm}|L{5.5cm}|L{5.5cm}|}
+\caption{Synthèse des acteurs du système} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Acteur}} & \textcolor{white}{\textbf{Responsabilités principales}} & \textcolor{white}{\textbf{Interactions avec le système}} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Acteur}} & \textcolor{white}{\textbf{Responsabilités principales}} & \textcolor{white}{\textbf{Interactions avec le système}} \\
+\hline
+\endhead
+Responsable des ressources &
+Administrateur du parc matériel. Supervise les appels d'offre, sélectionne les fournisseurs, gère l'inventaire, décide des actions de maintenance. &
+Créer des AO, sélectionner offres, affecter ressources, blacklister fournisseurs, valider constats de maintenance. \\
+\hline
+Chef de département &
+Représente un département académique. Collecte les besoins des enseignants et les soumet au responsable. Reçoit les affectations. &
+Saisir les besoins, suivre les affectations, signaler des pannes, consulter les ressources du département. \\
+\hline
+Enseignant &
+Utilisateur final des ressources matérielles. Exprime ses besoins et signale les dysfonctionnements. &
+Exprimer besoins (via chef), signaler pannes, consulter ressources affectées. \\
+\hline
+Fournisseur (Société) &
+Entreprise externe souhaitant répondre aux appels d'offre de la faculté. &
+S'inscrire, consulter AO ouverts, soumettre offres avec détail prix/garantie/livraison. \\
+\hline
+Technicien de maintenance &
+Agent technique chargé du diagnostic et de la réparation des ressources défectueuses. &
+Consulter les pannes signalées, intervenir sur site, rédiger des constats techniques détaillés. \\
+\hline
+\end{longtable}
+
+\section{Fiche Détaillée des Acteurs}
+
+\subsection{Responsable des Ressources}
+
+\begin{tcolorbox}[exigbox, title=Responsable des Ressources]
+\textbf{Rôle système :} \texttt{responsable} \\
+\textbf{Niveau d'accès :} Maximum — accès à l'intégralité des fonctionnalités \\
+\textbf{Profil type :} Administrateur informatique ou responsable logistique de la faculté \\[6pt]
+\textbf{Besoins métier :}
+\begin{itemize}
+    \item Disposer d'une vue consolidée de tous les besoins des départements avant de lancer un appel d'offre
+    \item Pouvoir comparer objectivement les offres des fournisseurs (prix, délai, garantie)
+    \item Maintenir un inventaire précis avec numéros de série et historique des affectations
+    \item Suivre l'état de toutes les pannes et décider des actions correctives
+    \item Protéger la faculté contre les fournisseurs défaillants via la liste noire
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Chef de Département}
+
+\begin{tcolorbox}[exigbox, title=Chef de Département]
+\textbf{Rôle système :} \texttt{chef\_departement} \\
+\textbf{Niveau d'accès :} Intermédiaire — limité aux ressources de son département \\
+\textbf{Profil type :} Professeur responsable d'une unité pédagogique \\[6pt]
+\textbf{Besoins métier :}
+\begin{itemize}
+    \item Recueillir les besoins de son équipe et les soumettre de manière structurée
+    \item Consulter la liste des ressources affectées à son département
+    \item Participer aux réunions de concertation avant validation des besoins
+    \item Être informé des affectations prévues suite à un appel d'offre
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Enseignant}
+
+\begin{tcolorbox}[exigbox, title=Enseignant]
+\textbf{Rôle système :} \texttt{enseignant} \\
+\textbf{Niveau d'accès :} Limité — consultation et signalement uniquement \\
+\textbf{Profil type :} Membre du corps enseignant d'un département \\[6pt]
+\textbf{Besoins métier :}
+\begin{itemize}
+    \item Signaler rapidement toute panne affectant son travail
+    \item Consulter les ressources qui lui sont affectées
+    \item Suivre le statut de ses signalements de pannes
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Fournisseur}
+
+\begin{tcolorbox}[exigbox, title=Fournisseur]
+\textbf{Rôle système :} \texttt{fournisseur} \\
+\textbf{Niveau d'accès :} Externe — consultation AO ouverts et soumission d'offres \\
+\textbf{Profil type :} Société commerciale spécialisée en matériel informatique \\[6pt]
+\textbf{Besoins métier :}
+\begin{itemize}
+    \item Accéder facilement aux appels d'offre en cours sans démarches administratives lourdes
+    \item Soumettre des propositions détaillées avec tarification article par article
+    \item Être informé rapidement de l'acceptation ou du rejet de son offre avec motif
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Technicien de Maintenance}
+
+\begin{tcolorbox}[exigbox, title=Technicien de Maintenance]
+\textbf{Rôle système :} \texttt{technicien} \\
+\textbf{Niveau d'accès :} Limité — consultation des pannes et rédaction de constats \\
+\textbf{Profil type :} Agent de support technique de la faculté \\[6pt]
+\textbf{Besoins métier :}
+\begin{itemize}
+    \item Consulter la liste des pannes ouvertes pour planifier ses interventions
+    \item Rédiger un constat structuré après chaque intervention
+    \item Indiquer si la ressource peut être réparée sur place ou doit être retournée
+\end{itemize}
+\end{tcolorbox}
+
+%==========================================================
+\chapter{Processus Métier}
+%==========================================================
+
+\section{Vue Générale des Processus}
+
+Le système GRM s'articule autour de trois processus métier principaux, chacun impliquant plusieurs acteurs et pouvant être modélisé en notation BPMN.
+
+\section{Processus 1 : Gestion des Appels d'Offre}
+
+\subsection{Description Générale}
+
+Ce processus couvre le cycle complet depuis l'identification des besoins jusqu'à l'attribution du marché à un fournisseur.
+
+\subsection{Déroulement Détaillé}
+
+\begin{longtable}{|C{0.8cm}|L{3cm}|L{6cm}|L{4cm}|}
+\caption{Étapes du processus Appel d'Offre} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{\#}} & \textcolor{white}{\textbf{Acteur}} & \textcolor{white}{\textbf{Action}} & \textcolor{white}{\textbf{Résultat}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{\#} & \textbf{Acteur} & \textbf{Action} & \textbf{Résultat} \\
+\hline
+\endhead
+1 & Chef de département & Interroger les enseignants sur leurs besoins en matériel & Liste des besoins bruts \\
+\hline
+2 & Enseignants & Exprimer leurs besoins (type, quantité, spécifications) & Besoins individuels collectés \\
+\hline
+3 & Chef de département & Organiser une réunion de concertation pour valider et ajuster les besoins & Besoins validés et consolidés \\
+\hline
+4 & Chef de département & Soumettre les besoins consolidés au responsable via le système & Demande formalisée \\
+\hline
+5 & Responsable & Rassembler les besoins de tous les départements & Besoins globaux de la faculté \\
+\hline
+6 & Responsable & Créer l'appel d'offre avec dates de début et de fin & AO publié au statut «ouvert» \\
+\hline
+7 & Fournisseurs & Consulter les appels d'offre ouverts & Connaissance des opportunités \\
+\hline
+8 & Fournisseurs & Soumettre une offre (prix, garantie, délai, détail) & Offre enregistrée \\
+\hline
+9 & Responsable & Vérifier et éliminer les fournisseurs de la liste noire & Offres non conformes filtrées \\
+\hline
+10 & Responsable & Sélectionner l'offre la moins disante parmi les conformes & Fournisseur retenu \\
+\hline
+11 & Système & Envoyer notification d'acceptation au fournisseur retenu & Fournisseur informé \\
+\hline
+12 & Système & Envoyer notifications de rejet aux autres fournisseurs & Candidats non retenus informés \\
+\hline
+13 & Responsable & Fermer l'appel d'offre et attendre la livraison & AO au statut «attribué» \\
+\hline
+\end{longtable}
+
+\subsection{Points de Décision}
+
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Réunion de concertation} : Le chef peut modifier les besoins après consultation. Les modifications sont possibles jusqu'à soumission au responsable.
+    \item \textbf{Filtrage des offres} : Le responsable peut rejeter une offre individuellement avant sélection finale.
+    \item \textbf{Sélection} : Si aucune offre n'est satisfaisante, le responsable peut laisser l'AO ouvert ou le recréer.
+\end{itemize}
+
+\section{Processus 2 : Réception et Gestion de l'Inventaire}
+
+\subsection{Description Générale}
+
+Après attribution du marché, ce processus gère la réception physique des ressources, leur enregistrement dans l'inventaire et leur affectation aux départements.
+
+\subsection{Déroulement Détaillé}
+
+\begin{longtable}{|C{0.8cm}|L{3cm}|L{6cm}|L{4cm}|}
+\caption{Étapes du processus Réception et Inventaire} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{\#}} & \textcolor{white}{\textbf{Acteur}} & \textcolor{white}{\textbf{Action}} & \textcolor{white}{\textbf{Résultat}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{\#} & \textbf{Acteur} & \textbf{Action} & \textbf{Résultat} \\
+\hline
+\endhead
+1 & Fournisseur & Livrer les ressources matérielles à la faculté & Matériel reçu \\
+\hline
+2 & Responsable & Vérifier la conformité des ressources livrées & Réception validée ou litige \\
+\hline
+3 & Responsable & Si nouveau fournisseur : saisir lieu, adresse, site, gérant & Fiche fournisseur complète \\
+\hline
+4 & Responsable & Attribuer un numéro d'inventaire (code à barres) à chaque ressource & Ressource enregistrée \\
+\hline
+5 & Responsable & Enregistrer les caractéristiques techniques de chaque ressource & Fiche technique créée \\
+\hline
+6 & Responsable & Enregistrer la date de fin de garantie de chaque ressource & Garantie tracée \\
+\hline
+7 & Responsable & Affecter chaque ressource à un département (ou une personne précise) & Affectation enregistrée \\
+\hline
+8 & Système & Mettre à jour le statut de la ressource («affectée») & Inventaire à jour \\
+\hline
+9 & Système & Générer et envoyer la liste des affectations au chef de département & Chef informé \\
+\hline
+\end{longtable}
+
+\section{Processus 3 : Maintenance et Traitement des Pannes}
+
+\subsection{Description Générale}
+
+Ce processus gère le cycle de vie d'une panne, depuis son signalement par un enseignant jusqu'à sa résolution ou le retour de la ressource au fournisseur.
+
+\subsection{Déroulement Détaillé}
+
+\begin{longtable}{|C{0.8cm}|L{3cm}|L{6cm}|L{4cm}|}
+\caption{Étapes du processus Maintenance} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{\#}} & \textcolor{white}{\textbf{Acteur}} & \textcolor{white}{\textbf{Action}} & \textcolor{white}{\textbf{Résultat}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{\#} & \textbf{Acteur} & \textbf{Action} & \textbf{Résultat} \\
+\hline
+\endhead
+1 & Enseignant / Chef & Signaler une panne sur une ressource de son département & Ticket de panne créé \\
+\hline
+2 & Système & Changer le statut de la ressource à «maintenance» & Ressource marquée hors service \\
+\hline
+3 & Technicien & Consulter les pannes ouvertes et planifier son intervention & Planning de maintenance \\
+\hline
+4 & Technicien & Intervenir physiquement auprès du département concerné & Diagnostic effectué \\
+\hline
+5a & Technicien & Si panne simple : réparer la ressource sur place & Panne résolue \\
+\hline
+5b & Technicien & Si panne sévère : rédiger un constat (explication, date, fréquence, type, ordre logiciel ou matériel) & Constat transmis \\
+\hline
+6 & Système & Transmettre le constat au responsable des ressources & Responsable alerté \\
+\hline
+7a & Responsable & Si réparable et garantie valide : renvoyer au fournisseur pour réparation & Retour fournisseur engagé \\
+\hline
+7b & Responsable & Si garantie expirée ou non réparable : décision de remplacement & Nouveau besoin créé \\
+\hline
+8 & Responsable & Résoudre le ticket de panne et remettre la ressource en service & Ressource de nouveau disponible \\
+\hline
+\end{longtable}
+
+\subsection{Règle Spécifique — Imprimantes}
+
+\begin{tcolorbox}[exigbox, title=Règle de Gestion RG-01]
+Les pannes signalées sur des imprimantes sont \textbf{systématiquement} considérées comme d'ordre matériel. Le champ «type d'ordre» pour une imprimante ne peut prendre que la valeur «matériel». Cette règle est appliquée côté serveur lors de la création du constat.
+\end{tcolorbox}
+
+%==========================================================
+\chapter{Exigences Fonctionnelles}
+%==========================================================
+
+\section{Module Authentification et Sécurité}
+
+\begin{longtable}{|C{1.8cm}|L{8.5cm}|C{2cm}|C{2cm}|}
+\caption{Exigences — Module Authentification} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} & \textcolor{white}{\textbf{Statut}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} & \textbf{Statut} \\
+\hline
+\endhead
+EF-AUTH-01 & Le système doit permettre à tout utilisateur de s'authentifier via une adresse e-mail et un mot de passe. & Haute & Impl. \\
+\hline
+EF-AUTH-02 & Le système doit retourner un jeton JWT signé à l'authentification réussie, valide pendant 24 heures. & Haute & Impl. \\
+\hline
+EF-AUTH-03 & Le système doit rejeter toute requête sur une ressource protégée si aucun jeton valide n'est fourni (HTTP 401). & Haute & Impl. \\
+\hline
+EF-AUTH-04 & Le système doit rejeter tout accès à une fonctionnalité non autorisée pour le rôle de l'utilisateur connecté (HTTP 403). & Haute & Impl. \\
+\hline
+EF-AUTH-05 & Un fournisseur doit pouvoir s'inscrire en fournissant le nom de sa société sans nécessiter de validation administrative préalable. & Haute & Impl. \\
+\hline
+EF-AUTH-06 & L'utilisateur doit pouvoir consulter son profil (nom, rôle, département). & Moyenne & Impl. \\
+\hline
+\end{longtable}
+
+\section{Module Appels d'Offre}
+
+\begin{longtable}{|C{1.8cm}|L{8.5cm}|C{2cm}|C{2cm}|}
+\caption{Exigences — Module Appels d'Offre} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} & \textcolor{white}{\textbf{Statut}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} & \textbf{Statut} \\
+\hline
+\endhead
+EF-AO-01 & Le responsable et le chef de département doivent pouvoir créer un appel d'offre avec titre, description, dates de début et de fin. & Haute & Impl. \\
+\hline
+EF-AO-02 & Un appel d'offre doit pouvoir contenir plusieurs besoins en ressources, chacun spécifiant le type (ordinateur/imprimante), la quantité et les spécifications techniques. & Haute & Impl. \\
+\hline
+EF-AO-03 & Pour un ordinateur, les spécifications saisissables sont : marque, CPU, RAM, disque dur, écran. & Haute & Impl. \\
+\hline
+EF-AO-04 & Pour une imprimante, les spécifications saisissables sont : marque, vitesse d'impression, résolution. & Haute & Impl. \\
+\hline
+EF-AO-05 & La liste de tous les appels d'offre doit être consultable par tous les utilisateurs authentifiés. & Haute & Impl. \\
+\hline
+EF-AO-06 & Les fournisseurs authentifiés doivent pouvoir consulter uniquement les appels d'offre au statut «ouvert». & Haute & Impl. \\
+\hline
+EF-AO-07 & Le responsable doit pouvoir fermer un appel d'offre, passant son statut de «ouvert» à «fermé». & Haute & Impl. \\
+\hline
+EF-AO-08 & Un appel d'offre passe automatiquement au statut «attribué» lorsqu'une offre est acceptée. & Haute & Impl. \\
+\hline
+EF-AO-09 & Le responsable doit pouvoir modifier un appel d'offre tant qu'il est au statut «brouillon» ou «ouvert». & Moyenne & Impl. \\
+\hline
+\end{longtable}
+
+\section{Module Gestion des Offres Fournisseurs}
+
+\begin{longtable}{|C{1.8cm}|L{8.5cm}|C{2cm}|C{2cm}|}
+\caption{Exigences — Module Offres} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} & \textcolor{white}{\textbf{Statut}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} & \textbf{Statut} \\
+\hline
+\endhead
+EF-OFF-01 & Un fournisseur non blacklisté doit pouvoir soumettre une offre sur un appel d'offre ouvert. & Haute & Impl. \\
+\hline
+EF-OFF-02 & Une offre doit contenir obligatoirement : la date de livraison prévue, la durée de garantie en mois, le prix total. & Haute & Impl. \\
+\hline
+EF-OFF-03 & Une offre doit permettre de détailler le prix unitaire, la marque et la quantité pour chaque type de ressource proposé. & Haute & Impl. \\
+\hline
+EF-OFF-04 & Le système doit refuser toute soumission d'offre par un fournisseur blacklisté, même si ce dernier dispose d'un compte valide. & Haute & Impl. \\
+\hline
+EF-OFF-05 & Le responsable doit pouvoir visualiser toutes les offres d'un appel d'offre, triées par prix total croissant. & Haute & Impl. \\
+\hline
+EF-OFF-06 & Le responsable doit pouvoir accepter une offre ; le système rejette automatiquement toutes les autres offres du même appel. & Haute & Impl. \\
+\hline
+EF-OFF-07 & Le responsable doit pouvoir rejeter une offre individuellement en saisissant un motif de rejet. & Haute & Impl. \\
+\hline
+EF-OFF-08 & Le fournisseur dont l'offre est rejetée doit recevoir une notification incluant le motif du rejet. & Moyenne & Impl. \\
+\hline
+EF-OFF-09 & Le fournisseur dont l'offre est acceptée doit recevoir une notification d'acceptation. & Moyenne & Impl. \\
+\hline
+\end{longtable}
+
+\section{Module Gestion des Fournisseurs}
+
+\begin{longtable}{|C{1.8cm}|L{8.5cm}|C{2cm}|C{2cm}|}
+\caption{Exigences — Module Fournisseurs} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} & \textcolor{white}{\textbf{Statut}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} & \textbf{Statut} \\
+\hline
+\endhead
+EF-FRN-01 & L'inscription d'un fournisseur nécessite uniquement : nom de la société, nom du contact, adresse e-mail, mot de passe. & Haute & Impl. \\
+\hline
+EF-FRN-02 & Le profil fournisseur peut être enrichi avec : ville/lieu, adresse postale, site internet, nom du gérant. & Moyenne & Impl. \\
+\hline
+EF-FRN-03 & Le responsable doit pouvoir consulter la liste complète de tous les fournisseurs inscrits. & Haute & Impl. \\
+\hline
+EF-FRN-04 & Le responsable doit pouvoir mettre un fournisseur en liste noire en obligeant la saisie d'un motif. & Haute & Impl. \\
+\hline
+EF-FRN-05 & Le responsable doit pouvoir retirer un fournisseur de la liste noire. & Haute & Impl. \\
+\hline
+EF-FRN-06 & Le statut de liste noire d'un fournisseur doit être clairement visible dans l'interface. & Haute & Impl. \\
+\hline
+EF-FRN-07 & L'historique des offres soumises par un fournisseur doit être consultable par le responsable. & Moyenne & Impl. \\
+\hline
+\end{longtable}
+
+\section{Module Gestion des Ressources}
+
+\begin{longtable}{|C{1.8cm}|L{8.5cm}|C{2cm}|C{2cm}|}
+\caption{Exigences — Module Ressources} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} & \textcolor{white}{\textbf{Statut}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} & \textbf{Statut} \\
+\hline
+\endhead
+EF-RES-01 & Le responsable doit pouvoir créer une fiche ressource avec numéro d'inventaire unique, type, marque et date de garantie. & Haute & Impl. \\
+\hline
+EF-RES-02 & Le numéro d'inventaire (code à barres) doit être unique dans tout le système. & Haute & Impl. \\
+\hline
+EF-RES-03 & Le responsable doit pouvoir lister toutes les ressources avec filtrage par type et statut. & Haute & Impl. \\
+\hline
+EF-RES-04 & Le responsable doit pouvoir modifier les informations d'une ressource existante. & Haute & Impl. \\
+\hline
+EF-RES-05 & Le responsable doit pouvoir supprimer une ressource de l'inventaire. & Haute & Impl. \\
+\hline
+EF-RES-06 & Le responsable doit pouvoir affecter une ressource à un département entier ou à un enseignant précis. & Haute & Impl. \\
+\hline
+EF-RES-07 & Une nouvelle affectation doit automatiquement désactiver l'affectation précédente (historique conservé). & Haute & Impl. \\
+\hline
+EF-RES-08 & Le statut d'une ressource évolue automatiquement : disponible → affectée → maintenance → retournée. & Haute & Impl. \\
+\hline
+EF-RES-09 & L'historique complet des affectations d'une ressource doit être consultable. & Haute & Impl. \\
+\hline
+EF-RES-10 & Les spécifications techniques d'une ressource (CPU, RAM, etc.) doivent être consultables sur sa fiche détaillée. & Moyenne & Impl. \\
+\hline
+\end{longtable}
+
+\section{Module Maintenance et Pannes}
+
+\begin{longtable}{|C{1.8cm}|L{8.5cm}|C{2cm}|C{2cm}|}
+\caption{Exigences — Module Maintenance} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} & \textcolor{white}{\textbf{Statut}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} & \textbf{Statut} \\
+\hline
+\endhead
+EF-MNT-01 & Un enseignant ou chef de département doit pouvoir signaler une panne en sélectionnant la ressource et en décrivant le dysfonctionnement. & Haute & Impl. \\
+\hline
+EF-MNT-02 & Le signalement d'une panne doit automatiquement changer le statut de la ressource à «maintenance». & Haute & Impl. \\
+\hline
+EF-MNT-03 & Le technicien doit pouvoir consulter toutes les pannes ouvertes qui lui sont assignées. & Haute & Impl. \\
+\hline
+EF-MNT-04 & Le technicien doit pouvoir rédiger un constat de panne contenant : explication, date d'apparition, fréquence (rare/fréquente/permanente), type d'ordre (logiciel/matériel). & Haute & Impl. \\
+\hline
+EF-MNT-05 & Le technicien doit indiquer si la ressource peut ou non être réparée sur place. & Haute & Impl. \\
+\hline
+EF-MNT-06 & Le responsable doit recevoir le constat du technicien et pouvoir décider d'un retour fournisseur. & Haute & Impl. \\
+\hline
+EF-MNT-07 & Si la ressource est retournée au fournisseur, son statut doit passer à «retournée». & Haute & Impl. \\
+\hline
+EF-MNT-08 & Le responsable doit pouvoir résoudre un ticket de panne, remettant la ressource au statut «disponible». & Haute & Impl. \\
+\hline
+EF-MNT-09 & La date de fin de garantie de la ressource doit être affichée lors de la consultation du ticket, pour faciliter la décision du responsable. & Haute & Impl. \\
+\hline
+EF-MNT-10 & Le système doit distinguer visuellement si la garantie est encore valide ou expirée. & Moyenne & Impl. \\
+\hline
+\end{longtable}
+
+%==========================================================
+\chapter{Exigences Non Fonctionnelles}
+%==========================================================
+
+\section{Sécurité}
+
+\begin{longtable}{|C{1.8cm}|L{9cm}|C{2cm}|}
+\caption{Exigences de sécurité} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} \\
+\hline
+\endhead
+ENF-SEC-01 & Tous les mots de passe doivent être hachés avec l'algorithme bcrypt (facteur de coût minimum : 10) avant stockage. Aucun mot de passe en clair ne doit jamais être persisté. & Critique \\
+\hline
+ENF-SEC-02 & La communication entre le client et le serveur doit transiter exclusivement via HTTPS en production. & Critique \\
+\hline
+ENF-SEC-03 & Les tokens JWT doivent être signés avec un secret d'au moins 256 bits, configuré via variable d'environnement (non codé en dur). & Critique \\
+\hline
+ENF-SEC-04 & Les tokens JWT ont une durée de validité de 24 heures. Passé ce délai, l'utilisateur doit se réauthentifier. & Haute \\
+\hline
+ENF-SEC-05 & Toutes les requêtes vers l'API doivent vérifier la présence et la validité du token JWT avant traitement. & Critique \\
+\hline
+ENF-SEC-06 & Le contrôle d'accès par rôle (RBAC) doit être appliqué côté serveur pour chaque endpoint. Une vérification côté client seule ne suffit pas. & Critique \\
+\hline
+ENF-SEC-07 & Les requêtes SQL doivent utiliser des requêtes paramétrées (prepared statements) pour prévenir les injections SQL. & Critique \\
+\hline
+ENF-SEC-08 & Les en-têtes CORS doivent être configurés de manière restrictive en production pour n'autoriser que les origines légitimes. & Haute \\
+\hline
+\end{longtable}
+
+\section{Performance}
+
+\begin{longtable}{|C{1.8cm}|L{9cm}|C{2cm}|}
+\caption{Exigences de performance} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} \\
+\hline
+\endhead
+ENF-PERF-01 & Le temps de réponse de l'API doit être inférieur à 500 ms pour 95\% des requêtes en conditions normales d'utilisation (< 50 utilisateurs simultanés). & Haute \\
+\hline
+ENF-PERF-02 & Le chargement initial de l'application React doit être inférieur à 3 secondes sur une connexion de 10 Mbps. & Haute \\
+\hline
+ENF-PERF-03 & Les requêtes de liste (ressources, appels d'offre) doivent supporter la pagination pour les ensembles de données > 1000 éléments. & Moyenne \\
+\hline
+ENF-PERF-04 & Le pool de connexions PostgreSQL doit être correctement dimensionné (min 5, max 20 connexions) pour éviter les saturations. & Haute \\
+\hline
+\end{longtable}
+
+\section{Disponibilité et Fiabilité}
+
+\begin{longtable}{|C{1.8cm}|L{9cm}|C{2cm}|}
+\caption{Exigences de disponibilité} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} \\
+\hline
+\endhead
+ENF-DISPO-01 & Le système doit être disponible 99,5\% du temps pendant les heures ouvrables (8h-20h, du lundi au vendredi). & Haute \\
+\hline
+ENF-DISPO-02 & Les opérations critiques (acceptation d'offre, affectation de ressource) doivent être gérées dans des transactions SQL atomiques (BEGIN/COMMIT/ROLLBACK). & Critique \\
+\hline
+ENF-DISPO-03 & En cas d'erreur serveur, l'API doit retourner des messages d'erreur explicites (code HTTP + message JSON) sans exposer de détails techniques internes. & Haute \\
+\hline
+ENF-DISPO-04 & La base de données doit être sauvegardée quotidiennement avec une rétention d'au moins 7 jours. & Haute \\
+\hline
+\end{longtable}
+
+\section{Maintenabilité et Évolutivité}
+
+\begin{longtable}{|C{1.8cm}|L{9cm}|C{2cm}|}
+\caption{Exigences de maintenabilité} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Priorité}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Description} & \textbf{Priorité} \\
+\hline
+\endhead
+ENF-MAINT-01 & L'architecture doit séparer clairement les couches présentation, logique métier et persistance des données. & Haute \\
+\hline
+ENF-MAINT-02 & Le code source doit être versionné sur une plateforme Git (GitHub/GitLab). & Haute \\
+\hline
+ENF-MAINT-03 & Toutes les variables de configuration (connexion DB, JWT secret, port) doivent être externalisées dans des fichiers \texttt{.env}, non versionnés. & Haute \\
+\hline
+ENF-MAINT-04 & Le déploiement doit pouvoir être reproduit intégralement via Docker Compose en une seule commande. & Haute \\
+\hline
+ENF-MAINT-05 & L'application doit exposer un endpoint de santé (\texttt{GET /api/health}) permettant aux outils de monitoring de vérifier sa disponibilité. & Moyenne \\
+\hline
+\end{longtable}
+
+%==========================================================
+\chapter{Règles de Gestion}
+%==========================================================
+
+\begin{longtable}{|C{1.8cm}|L{4cm}|L{8cm}|}
+\caption{Règles de gestion métier} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{ID}} & \textcolor{white}{\textbf{Domaine}} & \textcolor{white}{\textbf{Règle}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Domaine} & \textbf{Règle} \\
+\hline
+\endhead
+RG-01 & Imprimantes & Une panne d'imprimante est toujours d'ordre matériel. Le champ «ordre logiciel» ne s'applique pas aux imprimantes. \\
+\hline
+RG-02 & Appel d'offre & Lorsqu'une offre est acceptée, toutes les autres offres du même appel d'offre sont automatiquement rejetées. \\
+\hline
+RG-03 & Appel d'offre & L'appel d'offre passe au statut «attribué» dès qu'une offre est acceptée. Aucune autre offre ne peut être acceptée. \\
+\hline
+RG-04 & Fournisseur & Un fournisseur blacklisté ne peut pas soumettre d'offre. Le contrôle s'effectue au moment de la soumission, même si le blacklist est postérieur à l'inscription. \\
+\hline
+RG-05 & Affectation & Lorsqu'une ressource est affectée à une nouvelle destination, son affectation précédente est automatiquement clôturée (date de retour enregistrée). \\
+\hline
+RG-06 & Inventaire & Le numéro d'inventaire d'une ressource est unique dans tout le système et ne peut pas être réutilisé. \\
+\hline
+RG-07 & Maintenance & La signalement d'une panne change automatiquement le statut de la ressource à «maintenance». \\
+\hline
+RG-08 & Maintenance & La résolution d'une panne remet automatiquement le statut de la ressource à «disponible». \\
+\hline
+RG-09 & Maintenance & Le retour d'une ressource au fournisseur change son statut à «retournée». Elle ne peut plus être affectée jusqu'à décision du responsable. \\
+\hline
+RG-10 & Sécurité & Toute action sensible (acceptation offre, blacklist, suppression ressource) est réservée exclusivement au rôle «responsable». \\
+\hline
+\end{longtable}
+
+%==========================================================
+\chapter{Modèle Conceptuel des Données}
+%==========================================================
+
+\section{Entités et Attributs}
+
+\subsection{Entité Utilisateur}
+
+\begin{tabularx}{\textwidth}{|L{3cm}|L{3cm}|L{7cm}|}
+\hline
+\rowcolor{lightgray}\textbf{Attribut} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & UUID & Identifiant unique généré automatiquement \\
+\hline
+name & VARCHAR(255) & Nom complet de l'utilisateur \\
+\hline
+email & VARCHAR(255) & Adresse e-mail, unique dans le système \\
+\hline
+password & VARCHAR(255) & Mot de passe haché (bcrypt) \\
+\hline
+role & ENUM & Rôle : responsable, chef\_departement, enseignant, fournisseur, technicien \\
+\hline
+department\_id & UUID (FK) & Référence au département (nullable pour responsable et technicien) \\
+\hline
+created\_at & TIMESTAMP & Date de création du compte \\
+\hline
+\end{tabularx}
+
+\subsection{Entité Appel d'Offre (Tender)}
+
+\begin{tabularx}{\textwidth}{|L{3cm}|L{3cm}|L{7cm}|}
+\hline
+\rowcolor{lightgray}\textbf{Attribut} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & UUID & Identifiant unique \\
+\hline
+title & VARCHAR(255) & Intitulé de l'appel d'offre \\
+\hline
+description & TEXT & Description générale \\
+\hline
+start\_date & DATE & Date d'ouverture des offres \\
+\hline
+end\_date & DATE & Date de clôture des offres \\
+\hline
+status & ENUM & draft / open / closed / awarded \\
+\hline
+created\_by & UUID (FK) & Utilisateur créateur \\
+\hline
+created\_at & TIMESTAMP & Date de création \\
+\hline
+\end{tabularx}
+
+\subsection{Entité Ressource}
+
+\begin{tabularx}{\textwidth}{|L{3cm}|L{3cm}|L{7cm}|}
+\hline
+\rowcolor{lightgray}\textbf{Attribut} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & UUID & Identifiant unique \\
+\hline
+inventory\_number & VARCHAR(100) & Numéro d'inventaire / code à barres (unique) \\
+\hline
+resource\_type & ENUM & ordinateur / imprimante \\
+\hline
+brand & VARCHAR(255) & Marque du matériel \\
+\hline
+status & ENUM & available / assigned / maintenance / returned \\
+\hline
+warranty\_end & DATE & Date de fin de garantie \\
+\hline
+specs & JSONB & Spécifications techniques (CPU, RAM, résolution…) \\
+\hline
+supplier\_id & UUID (FK) & Fournisseur d'origine \\
+\hline
+offer\_id & UUID (FK) & Offre d'acquisition \\
+\hline
+\end{tabularx}
+
+\section{Relations Principales}
+
+\begin{tabularx}{\textwidth}{|L{3.5cm}|C{2cm}|L{3.5cm}|L{5cm}|}
+\hline
+\rowcolor{lightgray}\textbf{Entité A} & \textbf{Cardinalité} & \textbf{Entité B} & \textbf{Description} \\
+\hline
+Département & 1..* & Utilisateur & Un département a plusieurs membres \\
+\hline
+AppelOffre & 1..* & BesoinRessource & Un AO a plusieurs besoins \\
+\hline
+AppelOffre & 0..* & Offre & Un AO reçoit plusieurs offres \\
+\hline
+Fournisseur & 1..* & Offre & Un fournisseur soumet plusieurs offres \\
+\hline
+Offre & 1..* & ArticleOffre & Une offre détaille plusieurs articles \\
+\hline
+Ressource & 0..* & Affectation & Une ressource a plusieurs affectations (historique) \\
+\hline
+Ressource & 0..* & Panne & Une ressource peut avoir plusieurs pannes \\
+\hline
+Panne & 0..1 & ConstatMaintenance & Une panne peut avoir un constat technique \\
+\hline
+\end{tabularx}
+
+%==========================================================
+\chapter{Glossaire}
+%==========================================================
+
+\begin{longtable}{|L{3.5cm}|L{10cm}|}
+\caption{Glossaire des termes métier} \\
+\hline
+\rowcolor{primary}\textcolor{white}{\textbf{Terme}} & \textcolor{white}{\textbf{Définition}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Terme} & \textbf{Définition} \\
+\hline
+\endhead
+Appel d'offre (AO) & Procédure formelle par laquelle la faculté sollicite des propositions commerciales auprès de fournisseurs pour l'acquisition de ressources matérielles. \\
+\hline
+Affectation & Action d'attribuer une ressource matérielle à un département ou à un enseignant précis. \\
+\hline
+Constat de panne & Document technique rédigé par un technicien décrivant la nature, la fréquence et le type d'une panne. \\
+\hline
+Fournisseur & Société commerciale externe proposant du matériel informatique en réponse aux appels d'offre de la faculté. \\
+\hline
+Garantie & Engagement contractuel du fournisseur à réparer ou remplacer le matériel défectueux pendant une durée déterminée à compter de la livraison. \\
+\hline
+JWT & JSON Web Token. Jeton d'authentification signé numériquement permettant de vérifier l'identité et les droits d'un utilisateur sans session serveur. \\
+\hline
+Liste noire & Liste des fournisseurs exclus des procédures d'appel d'offre en raison de manquements à leurs engagements. \\
+\hline
+Moins-disant & Expression désignant le fournisseur ayant soumis l'offre au prix total le plus bas parmi les offres conformes. \\
+\hline
+Numéro d'inventaire & Identifiant unique attribué à chaque ressource matérielle lors de sa réception, permettant son traçage (également appelé code à barres). \\
+\hline
+RBAC & Role-Based Access Control. Mécanisme de contrôle d'accès dans lequel les autorisations sont attribuées selon le rôle de l'utilisateur. \\
+\hline
+Ressource matérielle & Équipement informatique (ordinateur ou imprimante) géré par le système. \\
+\hline
+Spécifications techniques & Caractéristiques détaillées d'un équipement : pour un ordinateur (CPU, RAM, disque, écran, marque) ; pour une imprimante (vitesse, résolution, marque). \\
+\hline
+Ticket de panne & Enregistrement dans le système décrivant un dysfonctionnement signalé sur une ressource, de son ouverture à sa clôture. \\
+\hline
+\end{longtable}
+
+\end{document}

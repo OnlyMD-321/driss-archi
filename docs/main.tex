@@ -1,0 +1,114 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+
+\geometry{margin=2.5cm}
+
+% Colors
+\definecolor{primary}{RGB}{30, 41, 59}
+\definecolor{accent}{RGB}{59, 130, 246}
+\definecolor{success}{RGB}{16, 185, 129}
+\definecolor{codebg}{RGB}{248, 250, 252}
+\definecolor{codeframe}{RGB}{226, 232, 240}
+
+% Hyperlink setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accent,
+    urlcolor=accent,
+    citecolor=accent,
+    pdftitle={Gestion des Ressources Matérielles},
+    pdfauthor={Groupe d'étudiants Ynov}
+}
+
+% Header/footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{primary}Gestion des Ressources Matérielles}
+\fancyhead[R]{\small\color{primary}\leftmark}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Chapter title style
+\titleformat{\chapter}[block]
+  {\normalfont\huge\bfseries\color{primary}}
+  {\thechapter.}{1em}{}
+\titlespacing*{\chapter}{0pt}{-10pt}{20pt}
+
+% Code listings
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{codeframe},
+    keywordstyle=\color{accent}\bfseries,
+    commentstyle=\color{success}\itshape,
+    stringstyle=\color{primary},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    tabsize=2,
+    captionpos=b
+}
+
+\begin{document}
+
+%=========================================
+% TITLE PAGE
+%=========================================
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\Huge\bfseries\color{primary} Gestion des Ressources Matérielles\par}
+    \vspace{0.5cm}
+    {\large\color{accent} Rapport de Projet — Architecture Logicielle\par}
+    \vspace{2cm}
+
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Établissement} & Ynov Campus \\
+        \hline
+        \textbf{Niveau} & M1 Informatique \\
+        \hline
+        \textbf{Module} & Architecture Logicielle \\
+        \hline
+        \textbf{Année} & 2025-2026 \\
+        \hline
+    \end{tabular}
+
+    \vspace{2cm}
+    \includegraphics[width=0.25\textwidth]{logo.png}
+    \vspace{1cm}
+
+    {\large \textbf{Responsable pédagogique :} Pr. Driss\par}
+    \vspace{3cm}
+    {\large \today\par}
+\end{titlepage}
+
+%=========================================
+% TABLE OF CONTENTS
+%=========================================
+\tableofcontents
+\newpage
+
+%=========================================
+% CHAPTERS
+%=========================================
+\include{etape1_analyse}
+\include{etape2_conception}
+\include{etape3_architecture}
+\include{etape4_implementation}
+
+\end{document}

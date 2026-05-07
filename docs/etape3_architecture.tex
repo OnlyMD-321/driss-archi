@@ -1,0 +1,217 @@
+\chapter{Étape 3 : Architecture du Système}
+
+\section{Vue d'Ensemble}
+
+Le système GRM adopte une architecture \textbf{3-tiers} classique, séparant clairement :
+\begin{itemize}
+    \item Le \textbf{Frontend} (couche présentation) : application React SPA
+    \item Le \textbf{Backend} (couche logique métier) : API REST Node.js/Express
+    \item La \textbf{Base de données} (couche persistance) : PostgreSQL
+\end{itemize}
+
+Cette architecture garantit la séparation des responsabilités, la maintenabilité et la scalabilité.
+
+\section{Architecture 3-Tiers}
+
+\begin{verbatim}
++----------------------------------------------------------+
+|                     CLIENT (Browser)                     |
+|                  React SPA (Port 3000)                   |
+|  +------------------+   +-----------------------------+  |
+|  | Pages / Composants|   |  Context + Services (Axios) | |
+|  +------------------+   +-----------------------------+  |
++------------------------------|---------------------------+
+                               | HTTPS / REST API
++------------------------------|---------------------------+
+|                    BACKEND (Node.js)                     |
+|                  Express API (Port 5000)                  |
+|  +----------+  +-------------+  +-------------------+   |
+|  | Routes   |--| Controllers |--| Middleware (JWT)   |   |
+|  +----------+  +-------------+  +-------------------+   |
++------------------------------|---------------------------+
+                               | SQL (pg)
++------------------------------|---------------------------+
+|               BASE DE DONNÉES (PostgreSQL)               |
+|                       Port 5432                          |
+|  +----------+  +----------+  +----------+  +--------+   |
+|  | users    |  | tenders  |  | resources|  | offers |   |
+|  +----------+  +----------+  +----------+  +--------+   |
++----------------------------------------------------------+
+\end{verbatim}
+
+\section{Choix Technologiques}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Couche} & \textbf{Technologie} & \textbf{Justification} \\
+\hline
+Frontend & React 18 & Bibliothèque UI déclarative, SPA, grande communauté, React Router v6 pour la navigation \\
+\hline
+HTTP Client & Axios & Client HTTP avec intercepteurs pour gestion centralisée des tokens JWT \\
+\hline
+Backend & Node.js + Express & Performance, non-bloquant, JSON natif, facilité d'API REST \\
+\hline
+Authentification & JWT (jsonwebtoken) & Stateless, sécurisé, contient le rôle et l'ID pour le RBAC \\
+\hline
+Hachage & bcrypt & Standard industrie pour le hachage sécurisé des mots de passe \\
+\hline
+Base de données & PostgreSQL & SGBDR robuste, JSONB pour les specs flexibles, UUID pour les clés primaires \\
+\hline
+Driver DB & node-postgres (pg) & Accès direct SQL avec pool de connexions \\
+\hline
+Déploiement & Docker & Containerisation pour reproductibilité des environnements \\
+\hline
+\end{tabularx}
+\caption{Stack technologique}
+\end{table}
+
+\section{Diagramme de Composants}
+
+\begin{verbatim}
+React Frontend
++--------------------------------------------+
+|  <<component>>         <<component>>       |
+|  AuthContext    <-->   API Service (Axios)  |
+|                              |              |
+|  <<component>>   <<component>>  <<page>>   |
+|  Layout       | TenderList  | Dashboard    |
+|  (Navbar,     | TenderDetail| ResourceList |
+|   Sidebar)    | TenderForm  | BreakdownList|
++--------------------------------------------+
+                       |
+              REST API (JSON/HTTP)
+                       |
+Express Backend
++--------------------------------------------+
+|  server.js                                 |
+|     |                                      |
+|  <<middleware>>  <<middleware>>             |
+|  CORS          JWT authenticate            |
+|  JSON Parser   RBAC authorize              |
+|                                            |
+|  <<routes>>  ----->  <<controllers>>       |
+|  /api/auth           authController        |
+|  /api/tenders        tenderController      |
+|  /api/offers         offerController       |
+|  /api/resources      resourceController    |
+|  /api/suppliers      supplierController    |
+|  /api/breakdowns     breakdownController   |
+|  /api/departments    departmentController  |
++--------------------------------------------+
+                       |
+              node-postgres Pool
+                       |
+PostgreSQL Database
++--------------------------------------------+
+|  users | departments | suppliers           |
+|  tenders | tender_needs | offers           |
+|  offer_items | resources | assignments     |
+|  breakdowns | maintenance_reports          |
++--------------------------------------------+
+\end{verbatim}
+
+\section{Sécurité}
+
+\subsection{Authentification JWT}
+
+\begin{enumerate}
+    \item L'utilisateur envoie email + mot de passe à \texttt{POST /api/auth/login}
+    \item Le serveur vérifie le mot de passe avec \texttt{bcrypt.compare()}
+    \item En cas de succès, le serveur génère un JWT signé (durée : 24h) contenant :
+    \begin{itemize}
+        \item \texttt{id} : identifiant utilisateur
+        \item \texttt{role} : rôle pour le RBAC
+        \item \texttt{department\_id} : département associé
+        \item \texttt{supplier\_id} : ID fournisseur (si applicable)
+    \end{itemize}
+    \item Le client stocke le token dans \texttt{localStorage} et l'envoie dans l'en-tête \texttt{Authorization: Bearer <token>}
+    \item Le middleware \texttt{authenticate} vérifie le token à chaque requête protégée
+\end{enumerate}
+
+\subsection{Contrôle d'Accès par Rôle (RBAC)}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{|X|l|l|l|l|l|}
+\hline
+\textbf{Endpoint} & \textbf{Resp.} & \textbf{Chef} & \textbf{Ensgt} & \textbf{Tech.} & \textbf{Fsseur} \\
+\hline
+GET /tenders & \checkmark & \checkmark & & & \checkmark \\
+\hline
+POST /tenders & \checkmark & \checkmark & & & \\
+\hline
+PATCH /tenders/:id/close & \checkmark & & & & \\
+\hline
+POST /offers/tender/:id & & & & & \checkmark \\
+\hline
+PATCH /offers/:id/accept & \checkmark & & & & \\
+\hline
+POST /resources & \checkmark & & & & \\
+\hline
+POST /resources/:id/assign & \checkmark & & & & \\
+\hline
+PATCH /suppliers/:id/blacklist & \checkmark & & & & \\
+\hline
+POST /breakdowns & & \checkmark & \checkmark & & \\
+\hline
+POST /breakdowns/:id/maintenance-report & & & & \checkmark & \\
+\hline
+PATCH /breakdowns/:id/return-to-supplier & \checkmark & & & & \\
+\hline
+\end{tabularx}
+\caption{Matrice des autorisations}
+\end{table}
+
+\section{Diagramme de Déploiement}
+
+\begin{verbatim}
++---------------------+        +----------------------+
+|   Machine Client    |        |  Serveur Applicatif  |
+|  (Navigateur Web)   |        |  (Node.js / Docker)  |
+|                     |        |                      |
+|  React SPA          | HTTPS  |  Express API         |
+|  (Build statique)   |------->|  Port 5000           |
+|                     |        |                      |
++---------------------+        +----------+-----------+
+                                          |
+                                          | TCP/5432
+                                          |
+                               +----------+-----------+
+                               |  Serveur PostgreSQL  |
+                               |  (Docker / VM)       |
+                               |  Base: grm_db        |
+                               +----------------------+
+\end{verbatim}
+
+\subsection{Configuration Docker}
+
+Le déploiement utilise Docker Compose avec trois services :
+\begin{enumerate}
+    \item \textbf{db} : PostgreSQL 15, volume persistant pour les données
+    \item \textbf{backend} : Node.js 20-alpine, expose le port 5000
+    \item \textbf{frontend} : Nginx servant le build React, expose le port 80
+\end{enumerate}
+
+\section{Diagramme de Séquence — Sélection d'une Offre}
+
+\begin{verbatim}
+Responsable    Frontend       Backend API      Database
+     |             |               |               |
+     |--[Voir offres d'un AO]----->|               |
+     |             |   GET /offers/tender/{id}     |
+     |             |               |--[SELECT offers JOIN suppliers]-->|
+     |             |               |<--------[Liste offres triées]-----|
+     |             |<-[Affiche offres par prix]    |               |
+     |             |               |               |               |
+     |--[Clic Accepter offre X]--->|               |               |
+     |             |   PATCH /offers/{id}/accept   |               |
+     |             |               |--[BEGIN]----->|               |
+     |             |               |--[UPDATE offers SET status='accepted' WHERE id=X]-->|
+     |             |               |--[UPDATE offers SET status='rejected' WHERE tender_id=T AND id!=X]-->|
+     |             |               |--[UPDATE tenders SET status='awarded']-->|
+     |             |               |--[COMMIT]---->|               |
+     |             |<-[200 OK Offre acceptée]      |               |
+     |<--[Notif: Offre acceptée/rejetée]           |               |
+\end{verbatim}
