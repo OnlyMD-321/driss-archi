@@ -123,15 +123,15 @@ INSERT INTO departments (id, name) VALUES
     ('22222222-2222-2222-2222-222222222222', 'Mathématiques'),
     ('33333333-3333-3333-3333-333333333333', 'Physique');
 
--- Password: admin123 (bcrypt hash)
+-- Password: admin123 (bcrypt hash, cost 10)
 INSERT INTO users (id, name, email, password, role) VALUES
     ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Responsable Ressources', 'responsable@faculte.ma',
-     '$2b$10$rBnHpgGYEoQ4Xv8q3K1JfOmWqzN5Ld7cT0uYhPj6Ri8sVxN2eKmG', 'responsable');
+     '$2b$10$psjjuQ8r9wBcfLTvGV5FjeCBBH1wxN82NhUFmM57AzekG3755eAgm', 'responsable');
 
 INSERT INTO users (id, name, email, password, role, department_id) VALUES
     ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Chef Département Info', 'chef.info@faculte.ma',
-     '$2b$10$rBnHpgGYEoQ4Xv8q3K1JfOmWqzN5Ld7cT0uYhPj6Ri8sVxN2eKmG', 'chef_departement', '11111111-1111-1111-1111-111111111111'),
+     '$2b$10$psjjuQ8r9wBcfLTvGV5FjeCBBH1wxN82NhUFmM57AzekG3755eAgm', 'chef_departement', '11111111-1111-1111-1111-111111111111'),
     ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Prof. Ahmed Benali', 'ahmed.benali@faculte.ma',
-     '$2b$10$rBnHpgGYEoQ4Xv8q3K1JfOmWqzN5Ld7cT0uYhPj6Ri8sVxN2eKmG', 'enseignant', '11111111-1111-1111-1111-111111111111'),
+     '$2b$10$psjjuQ8r9wBcfLTvGV5FjeCBBH1wxN82NhUFmM57AzekG3755eAgm', 'enseignant', '11111111-1111-1111-1111-111111111111'),
     ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Technicien Maintenance', 'tech@faculte.ma',
-     '$2b$10$rBnHpgGYEoQ4Xv8q3K1JfOmWqzN5Ld7cT0uYhPj6Ri8sVxN2eKmG', 'technicien', NULL);
+     '$2b$10$psjjuQ8r9wBcfLTvGV5FjeCBBH1wxN82NhUFmM57AzekG3755eAgm', 'technicien', NULL);
